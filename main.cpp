@@ -13,7 +13,7 @@
 
 int main(int argc, const char * argv[]) {
     //
-    std::cout << "Starting tests ..." << std::endl;
+    std::cout << "Starting tests ...\n" << std::endl;
     FloatDouble::test();
 
     DataOrientedDesign::test();

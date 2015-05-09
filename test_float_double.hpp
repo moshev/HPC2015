@@ -64,10 +64,11 @@ namespace FloatDouble {
 
         auto f = 0.0f;
         auto time2 = getTime();
-        d += testFloat(d);
+        f += testFloat(d);
         auto time3 = getTime();
         
         std::cout << '\t' << "Float " << diffclock(time3, time2) << std::endl;
+        std::cout << "\n **** \n\n";
     }
 }
 
