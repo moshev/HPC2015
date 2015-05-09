@@ -15,15 +15,22 @@
 
 #include "inline.h"
 
+#include "context_switch.h"
+
+#include "data_oriented_design.h"
+
 namespace PointerAlias {
     void test();
 } //namespace PointerAlias
 
 int main(int argc, const char * argv[]) {
     srand (0);
-    
+    Inline::test();
 
-    
+    return 0;
+    DataOrientedDesign::test();
+    return 0;
+    return 0;
     //SoA::test();
     
    // CacheMiss::test();
@@ -79,7 +86,7 @@ int main(int argc, const char * argv[]) {
 namespace PointerAlias {
     void test() {
         std::cout << "Testing pointer alias ..." << std::endl;
-        auto POINTER_ALIAS_TEST_SIZE = 65000000;//65m since js can't process more (at least node.js can't) 300000000;
+        auto POINTER_ALIAS_TEST_SIZE = PointerAlias::getTestSize();
         auto RUN_TIMES = 5;
         std::unique_ptr<float[]> a(new float[POINTER_ALIAS_TEST_SIZE]);
         std::unique_ptr<float[]> b(new float[POINTER_ALIAS_TEST_SIZE]);

@@ -12,6 +12,7 @@
 
 #include <ctime>
 #include <chrono>
+#include "common.h"
 
 std::chrono::time_point<std::chrono::system_clock> getTime() {
     return std::chrono::system_clock::now();

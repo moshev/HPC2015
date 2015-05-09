@@ -120,17 +120,20 @@ private:
     int maxSize;
 };
 
-#define CACHE_MISS_TEST_SIZE 81000
+    
+inline size_t getTestSize() {
+    return 81000;
+}
 
 template <typename T>
 inline void eraseContainer(T& container) {
-    for (int i = 0; i < CACHE_MISS_TEST_SIZE; ++i)
+    for (int i = 0; i < getTestSize(); ++i)
         container.remove(i);
 }
 
 template <typename T>
 inline void eraseContainer(std::vector<T>& vec) {
-    for (int i = 0; i < CACHE_MISS_TEST_SIZE; ++i) {
+    for (int i = 0; i < getTestSize(); ++i) {
         auto iter = std::find(vec.begin(), vec.end(), i);
         vec.erase(iter);
     }
@@ -143,24 +146,24 @@ double customListTime = 0.0;
 
 inline void cacheMissTest() {
     std::vector<int> vecStd;
-    vecStd.reserve(CACHE_MISS_TEST_SIZE);
-    for (int i = 0; i < CACHE_MISS_TEST_SIZE; ++i)
+    vecStd.reserve(getTestSize());
+    for (int i = 0; i < getTestSize(); ++i)
         vecStd.push_back(i);
     
     std::random_shuffle(vecStd.begin(), vecStd.end());
     
     using namespace std;
     std::list<int> listStd;
-    for (int i = 0; i < CACHE_MISS_TEST_SIZE; ++i)
+    for (int i = 0; i < getTestSize(); ++i)
         listStd.push_back(vecStd[i]);
     
     Vector<int> vecCustom;
-    vecCustom.reset(CACHE_MISS_TEST_SIZE);
-    for (int i = 0; i < CACHE_MISS_TEST_SIZE; ++i)
+    vecCustom.reset((int)getTestSize());
+    for (int i = 0; i < getTestSize(); ++i)
         vecCustom.add(vecStd[i]);
     
     List<int> listCustom;
-    for (int i = 0; i < CACHE_MISS_TEST_SIZE; ++i)
+    for (int i = 0; i < getTestSize(); ++i)
         listCustom.add(vecStd[i]);
     
     auto beginStdVec = getTime();
