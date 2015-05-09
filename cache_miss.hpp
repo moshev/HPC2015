@@ -163,27 +163,27 @@ inline void cacheMissTest() {
     for (int i = 0; i < CACHE_MISS_TEST_SIZE; ++i)
         listCustom.add(vecStd[i]);
     
-    clock_t beginStdVec = clock();
+    auto beginStdVec = getTime();
     eraseContainer(vecStd);
-    clock_t endStdVec = clock();
+    auto endStdVec = getTime();
     stdVecTime+= double(diffclock(endStdVec,beginStdVec));
     if(!vecStd.empty()) printf("Bug in std vector test\n");
     
-    clock_t beginStdList = clock();
+    auto beginStdList = getTime();
     eraseContainer(listStd);
-    clock_t endStdList = clock();
+    auto endStdList = getTime();
     stdListTime += double(diffclock(endStdList,beginStdList));
     if(!listStd.empty()) printf("Bug in std list test\n");
     
-    clock_t beginVec = clock();
+    auto beginVec = getTime();
     eraseContainer(vecCustom);
-    clock_t endVec = clock();
+    auto endVec = getTime();
     customVecTime += double(diffclock(endVec,beginVec)) ;
     if(!vecCustom.empty()) printf("Bug in custom vector test\n");
     
-    clock_t beginList = clock();
+    auto beginList = getTime();
     eraseContainer(listCustom);
-    clock_t endList = clock();
+    auto endList = getTime();
     customListTime += double(diffclock(endList,beginList));
     if(!listCustom.empty()) printf("Bug in custom list test\n");
 }

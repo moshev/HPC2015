@@ -136,11 +136,11 @@ namespace SoA {
         ParticleSystem_AoS aos;
         aos.particles = particles;
         aos.count = SOA_TEST_SIZE;
-        auto t0 = clock();
+        auto t0 = getTime();
         for (float f = 0.f; f < 1.f; f += .1f) {
             aos.update(f);
         }
-        auto t1 = clock();
+        auto t1 = getTime();
         std::cout << "time AoS " << diffclock(t1, t0) << std::endl;
 
     }
@@ -151,11 +151,11 @@ namespace SoA {
         
         soa.randomize();
         
-        auto t0 = clock();
+        auto t0 = getTime();
         for (float f = 0.f; f < 1.f; f += .1f) {
             soa.update(f);
         }
-        auto t1 = clock();
+        auto t1 = getTime();
         
         std::cout << "time SoA " << diffclock(t1, t0) << std::endl;
     

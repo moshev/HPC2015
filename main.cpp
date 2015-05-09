@@ -11,6 +11,10 @@
 
 #include "SoA.h"
 
+#include "ssef.h"
+
+#include "inline.h"
+
 namespace PointerAlias {
     void test();
 } //namespace PointerAlias
@@ -18,9 +22,11 @@ namespace PointerAlias {
 int main(int argc, const char * argv[]) {
     srand (0);
     
-    SoA::test();
+
     
-    CacheMiss::test();
+    //SoA::test();
+    
+   // CacheMiss::test();
     
     PointerAlias::test();
     
@@ -73,7 +79,7 @@ int main(int argc, const char * argv[]) {
 namespace PointerAlias {
     void test() {
         std::cout << "Testing pointer alias ..." << std::endl;
-        auto POINTER_ALIAS_TEST_SIZE = 300000000;
+        auto POINTER_ALIAS_TEST_SIZE = 65000000;//65m since js can't process more (at least node.js can't) 300000000;
         auto RUN_TIMES = 5;
         std::unique_ptr<float[]> a(new float[POINTER_ALIAS_TEST_SIZE]);
         std::unique_ptr<float[]> b(new float[POINTER_ALIAS_TEST_SIZE]);
@@ -92,12 +98,12 @@ namespace PointerAlias {
                 a[i] = i; b[i] = i * 2; res[i] = i * 3;
             }
             
-            auto begin0 = clock();
+            auto begin0 = getTime();
             
             PointerAlias::A* bInt = (PointerAlias::A*)b.get();
             PointerAlias::B* resUnsigned = (PointerAlias::B*)res.get();
             PointerAlias::pointerAliasDifferentType(a.get(), bInt, resUnsigned, POINTER_ALIAS_TEST_SIZE);
-            auto end0 = clock();
+            auto end0 = getTime();
             res0 += diffclock(end0, begin0);
         }
         
@@ -107,9 +113,9 @@ namespace PointerAlias {
             for (auto i = 0; i < POINTER_ALIAS_TEST_SIZE; ++i) {
                 a[i] = i; b[i] = i * 2; res[i] = i * 3;
             }
-            auto begin1 = clock();
+            auto begin1 = getTime();
             PointerAlias::pointerAliasSameType(a.get(), b.get(), res.get(), POINTER_ALIAS_TEST_SIZE);
-            auto end1 = clock();
+            auto end1 = getTime();
             res1 += diffclock(end1, begin1);
         }
         
@@ -120,9 +126,9 @@ namespace PointerAlias {
             for (auto i = 0; i < POINTER_ALIAS_TEST_SIZE; ++i) {
                 a[i] = i; b[i] = i * 2; res[i] = i * 3;
             }
-            auto begin2 = clock();
+            auto begin2 = getTime();
             PointerAlias::pointerAliasDifferentTypeNoCast(a.get(), (PointerAlias::A*)b.get(), (PointerAlias::B*)res.get(), POINTER_ALIAS_TEST_SIZE);
-            auto end2 = clock();
+            auto end2 = getTime();
             res2 += diffclock(end2, begin2);
         }
         
@@ -133,9 +139,9 @@ namespace PointerAlias {
             for (auto i = 0; i < POINTER_ALIAS_TEST_SIZE; ++i) {
                 a[i] = i; b[i] = i * 2; res[i] = i * 3;
             }
-            auto begin3 = clock();
+            auto begin3 = getTime();
             PointerAlias::pointerAliasSameTypeRestrict(a.get(), b.get(), res.get(), POINTER_ALIAS_TEST_SIZE);
-            auto end3 = clock();
+            auto end3 = getTime();
             res3 += diffclock(end3, begin3);
         }
         

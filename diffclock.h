@@ -11,10 +11,15 @@
 
 
 #include <ctime>
+#include <chrono>
 
-double diffclock(clock_t clock1,clock_t clock2){
-    double diffticks = clock1 - clock2;
-    return (diffticks) / CLOCKS_PER_SEC;
+std::chrono::time_point<std::chrono::system_clock> getTime() {
+    return std::chrono::system_clock::now();
+}
+
+double diffclock(std::chrono::time_point<std::chrono::system_clock> end, std::chrono::time_point<std::chrono::system_clock> start){
+      std::chrono::duration<double> elapsed_seconds = end-start;
+    return elapsed_seconds.count();
 }
 
 #endif

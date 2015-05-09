@@ -11,6 +11,8 @@
 
 #define RESTRICT __restrict__
 #define NO_INLINE __attribute__ ((noinline))
+#define INLINE __inline__ __attribute__((always_inline))
+
 
 #include <cmath>
 #include <cstdlib>
@@ -20,4 +22,6 @@ inline float randomFloat() {
 inline int randomInt(int min, int max) {
     return min + (max - min) * randomFloat();
 }
+
+
 #endif
