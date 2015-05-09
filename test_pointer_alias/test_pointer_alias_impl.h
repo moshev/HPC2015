@@ -10,10 +10,8 @@
 #define GPAPI_pointer_alias_h
 #include "common.h"
 namespace PointerAlias {
-    struct A{};
-    struct B{};
-    inline size_t getTestSize() { return 65000000;//65m since js can't process more (at least node.js can't) 300000000;;};
-    }
+    struct A;
+    struct B;
     void pointerAliasSameType(float* a, float* b, float* res, size_t size);
     void pointerAliasDifferentType(float* a, A* b, B* res, size_t size);
     void pointerAliasDifferentTypeNoCast(float* a, A* b, B* res, size_t size) ;

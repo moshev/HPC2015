@@ -18,7 +18,7 @@
 namespace SoA {
     
     size_t getTestSize() {
-        return 50000000;
+        return 20000000;
     }
     
     struct Particle {
@@ -135,7 +135,7 @@ namespace SoA {
             aos.update(f);
         }
         auto t1 = getTime();
-        std::cout << "time AoS " << diffclock(t1, t0) << std::endl;
+        std::cout << '\t' << "time AoS " << diffclock(t1, t0) << std::endl;
 
     }
     
@@ -151,7 +151,7 @@ namespace SoA {
         }
         auto t1 = getTime();
         
-        std::cout << "time SoA " << diffclock(t1, t0) << std::endl;
+        std::cout << '\t' << "time SoA " << diffclock(t1, t0) << std::endl;
     
     }
     

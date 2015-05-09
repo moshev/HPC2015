@@ -94,12 +94,13 @@ struct MobFlags {
         testMobBool();
         auto t3 = getTime();
         
-        std::cout << "Mob bool " << diffclock(t3, t2) << std::endl;
-
+        std::cout << '\t' << "Mob bool " << diffclock(t3, t2) << std::endl;
         auto t0 = getTime();
         testMobFlags();
         auto t1 = getTime();
-        std::cout << "Mob flags " << diffclock(t1, t0) << std::endl;       
+        std::cout << '\t' << "Mob flags " << diffclock(t1, t0) << std::endl;
+        
+        std::cout << "\n **** \n\n";
     }
     
 }//namespace DataOrientedDesign

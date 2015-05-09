@@ -12,7 +12,7 @@
 #include "common.h"
 #include <cmath>
 #include <iostream>
-#include "inline_impl.h"
+#include "test_inline_impl.h"
 
 namespace Inline {
     INLINE float calcInline(float f) {
@@ -34,14 +34,14 @@ namespace Inline {
             for(int b = 0; b < 5; ++b)
                 res += calcInline(b);
         auto end0 = getTime();
-        std::cout << "inline " << diffclock(end0, begin0) << std::endl;
+        std::cout << '\t' << "inline " << diffclock(end0, begin0) << std::endl;
         
         auto begin1 = getTime();
         for(size_t a = 0; a < TEST_SIZE; ++a)
             for(int b = 0; b < 5; ++b)
                 res += calcNoInline(b);
         auto end1 = getTime();
-        std::cout << "no inline " << diffclock(end1, begin1) << std::endl;
+        std::cout << '\t' << "no inline " << diffclock(end1, begin1) << std::endl;
         
 
         std::cout << "\n **** \n\n";

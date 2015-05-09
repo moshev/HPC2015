@@ -7,7 +7,7 @@
 //
 
 #include <stdio.h>
-#include "pointer_alias.h"
+#include "test_pointer_alias.h"
 #include "common.h"
 
 namespace PointerAlias {    

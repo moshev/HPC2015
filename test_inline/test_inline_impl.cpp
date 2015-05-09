@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 г. savage309. All rights reserved.
 //
 
-#include "inline_impl.h"
+#include "test_inline_impl.h"
 #include <cmath>
 namespace Inline {
     float calcNoInline(float f) {

@@ -1,88 +1,15 @@
-#include <iostream>
-#include <cmath>
-#include <memory>
+//
+//  pointer_aliash.cpp
+//  GPAPI
+//
+//  Created by savage309 on 6.05.15.
+//  Copyright (c) 2015 г. savage309. All rights reserved.
+//
 
-#include "gpapi_host.h"
-#include "cache_miss.hpp"
-
+#include <stdio.h>
+#include "test_pointer_alias.h"
 #include "diffclock.h"
-
-#include "pointer_alias/pointer_alias.h"
-
-#include "SoA.h"
-
-#include "ssef.h"
-
-#include "inline/inline.h"
-
-#include "context_switch.h"
-
-#include "data_oriented_design.h"
-
-namespace PointerAlias {
-    void test();
-} //namespace PointerAlias
-
-int main(int argc, const char * argv[]) {
-    srand (0);
-    Inline::test();
-
-    return 0;
-    DataOrientedDesign::test();
-    return 0;
-    return 0;
-    //SoA::test();
-    
-   // CacheMiss::test();
-    
-    PointerAlias::test();
-    
-    return 0;
-    
-    /*
-    //query for devices
-    int numDevices = 0;
-    GPAPI::Result err = GPAPI::Result::Success;
-    err = GPAPI::getNumDevices(GPAPI::API::Native, &numDevices);
-    CHECK_ERROR(err);
-
-    //init a device
-    GPAPI::Device* device = NULL;
-    err = GPAPI::newDevice(GPAPI::Native, 0, device);
-    CHECK_ERROR(err);
-    
-    //load kernel
-    GPAPI::Kernel* kernel = NULL;
-    err = GPAPI::newKernel(GPAPI::Native, 0, "fooBar", kernel);
-    CHECK_ERROR(err);
-    
-    //allocate device buffer
-    GPAPI::Buffer* buffer = NULL;
-    err = GPAPI::newBuffer(GPAPI::Native, 0, buffer);
-    CHECK_ERROR(err);
-    int* ptr = new int; *ptr = 196;
-    err = buffer->alloc(ptr, sizeof(int));
-    CHECK_ERROR(err);
-    
-    //add params to a kernel
-    err = kernel->addParam(*buffer);
-    CHECK_ERROR(err);
-
-    //run kernel on a device
-    device->runKernel(*kernel, GPAPI::KernelConfiguration(32, 32*128));
-    err = buffer->download(ptr, sizeof(int));
-    CHECK_ERROR(err);
-    
-    //clean up
-    delete device;
-    delete buffer;
-    delete kernel;
-    delete ptr;
-    
-    return 0;*/
-}
-
-
+#include <iostream>
 namespace PointerAlias {
     void test() {
         std::cout << "Testing pointer alias ..." << std::endl;
@@ -114,7 +41,7 @@ namespace PointerAlias {
             res0 += diffclock(end0, begin0);
         }
         
-        std::cout << "Different Type Time " << res0/ RUN_TIMES << std::endl;
+        std::cout << '\t' << "Different Type Time " << res0/ RUN_TIMES << std::endl;
         
         for (int t = 0; t < RUN_TIMES; ++t) {
             for (auto i = 0; i < POINTER_ALIAS_TEST_SIZE; ++i) {
@@ -126,7 +53,7 @@ namespace PointerAlias {
             res1 += diffclock(end1, begin1);
         }
         
-        std::cout << "Same Type Time " << res1/ RUN_TIMES << std::endl;
+        std::cout << '\t' << "Same Type Time " << res1/ RUN_TIMES << std::endl;
         
         for (int t = 0; t < RUN_TIMES; ++t) {
             
@@ -139,7 +66,7 @@ namespace PointerAlias {
             res2 += diffclock(end2, begin2);
         }
         
-        std::cout << "Different Type No Cast Time " << res2/ RUN_TIMES << std::endl;
+        std::cout << '\t' << "Different Type No Cast Time " << res2/ RUN_TIMES << std::endl;
         
         for (int t = 0; t < RUN_TIMES; ++t) {
             
@@ -152,11 +79,9 @@ namespace PointerAlias {
             res3 += diffclock(end3, begin3);
         }
         
-        std::cout << "Different Type Restrict " << res3 / RUN_TIMES << std::endl;
+        std::cout << '\t' << "Different Type Restrict " << res3 / RUN_TIMES << std::endl;
         std::cout << "\n **** \n\n";
-
+        
     }
     
 } //namespace PointerAlias
-
-

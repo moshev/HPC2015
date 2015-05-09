@@ -13,7 +13,6 @@
 #define NO_INLINE __attribute__ ((noinline))
 #define INLINE __inline__ __attribute__((always_inline))
 
-
 #include <cmath>
 #include <cstdlib>
 

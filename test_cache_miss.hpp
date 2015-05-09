@@ -198,10 +198,10 @@ inline void test() {
     for (int i = 0; i < testTimes; ++i)
         cacheMissTest();
     
-    std::cout << "Std vec time:" << stdVecTime / testTimes << std::endl;
-    std::cout << "Std list time:" << stdListTime / testTimes << std::endl;
-    std::cout << "Custom vec time:" << customVecTime / testTimes << std::endl;
-    std::cout << "Custom list time:" << customListTime / testTimes<< std::endl;
+    std::cout << '\t' << "Std vec time:" << stdVecTime / testTimes << std::endl;
+    std::cout << '\t' << "Std list time:" << stdListTime / testTimes << std::endl;
+    std::cout << '\t' << "Custom vec time:" << customVecTime / testTimes << std::endl;
+    std::cout << '\t' << "Custom list time:" << customListTime / testTimes<< std::endl;
     
     std::cout << "\n **** \n\n";
     
