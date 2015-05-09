@@ -83,4 +83,38 @@ int test(int argc, const char* argv[]) {
     
     return 0;
 }
+    
+//hidding flag in the pointer
+template <typename T>
+void setFlag(T*& ptr, size_t flagIndex, bool value) {
+    size_t ptrAsSizeT = reinterpret_cast<size_t>(ptr);
+    if (value) {
+        ptr = reinterpret_cast<T*>( ptrAsSizeT | (1 << flagIndex) );
+    } else {
+        ptr = reinterpret_cast<T*>( ptrAsSizeT & (~ (1 << flagIndex)));
+    }
+}
+
+template<typename T>
+bool getFlag(const T* ptr, size_t flagIndex) {
+    return ptr & (1 << flagIndex);
+}
+
+template<typename Т>
+struct Node {
+private:
+    Т* left;
+    Т* right;
+public:
+    Т* getLeft() const { //make getRight() too
+        Т* tempPtr = left;
+        setFlag(tempPtr, 0, 0);
+        setFlag(tempPtr, 1, 0);
+        return tempPtr;
+    }
+    bool getSomething() const { return getFlag(left, 0); }
+    bool getSomethingElse() const { return getFlag(left, 1); }
+    void setSomething(bool foo) { setFlag(left, 0, foo); }
+    void setSomethingElse(bool foo) { setFlag(left, 1, foo); }
+};
 }
