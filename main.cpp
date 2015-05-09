@@ -11,11 +11,13 @@
 #include "test_data_oriented_design.hpp"
 #include "test_float_double.hpp"
 
-int main(int argc, const char * argv[]) {
-    //
-    std::cout << "Starting tests ...\n" << std::endl;
-    FloatDouble::test();
+#include "test_virtual/test_virtual.h"
 
+
+int main(int argc, const char * argv[]) {
+    std::cout << "Starting tests ...\n" << std::endl;
+    Virtual::test();
+    FloatDouble::test();
     DataOrientedDesign::test();
     SoA::test();
     Inline::test();
