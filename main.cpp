@@ -9,10 +9,17 @@
 #include "test_SoA.hpp"
 #include "test_inline/test_inline.h"
 #include "test_data_oriented_design.hpp"
+#include "test_float_double.hpp"
+#include "test_search.hpp"
 
 int main(int argc, const char * argv[]) {
     srand (0);
+    TestSearch::test();
+    return 0;
+    //
     std::cout << "Starting tests ..." << std::endl;
+    FloatDouble::test();
+
     DataOrientedDesign::test();
     SoA::test();
     Inline::test();
