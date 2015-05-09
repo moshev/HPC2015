@@ -10,10 +10,6 @@
 #include "test_inline/test_inline.h"
 #include "test_data_oriented_design.hpp"
 
-namespace PointerAlias {
-    void test();
-} //namespace PointerAlias
-
 int main(int argc, const char * argv[]) {
     srand (0);
     std::cout << "Starting tests ..." << std::endl;
