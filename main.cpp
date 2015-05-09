@@ -7,13 +7,13 @@
 
 #include "diffclock.h"
 
-#include "pointer_alias.h"
+#include "pointer_alias/pointer_alias.h"
 
 #include "SoA.h"
 
 #include "ssef.h"
 
-#include "inline.h"
+#include "inline/inline.h"
 
 #include "context_switch.h"
 

@@ -16,6 +16,7 @@
 
 #include <cmath>
 #include <cstdlib>
+
 inline float randomFloat() {
     return float(rand())/RAND_MAX;
 }
