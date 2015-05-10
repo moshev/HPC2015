@@ -18,19 +18,25 @@
 
 #include "test_ilp.h"
 
+#include "test_threads.h"
 //shared memory & shared nothing
 //concurrency & parallelism
 //subroutines & couroutines
 //test_and_set
 //amdahls law
 //car-passenger observation
-
+//coffman conditions
+//foster methodology
+//flynn taxonomy
+//conditional variables / monitors
+//spin lock, read-write lock, mutex, concurrent collections
 
 int main(int argc, const char * argv[]) {
+    
     std::cout << "Starting tests ...\n" << std::endl;
 
     auto t0 = getTime();
-    
+    Threads::test();    
     ILP::test();
     Virtual::test();
     FloatDouble::test();
