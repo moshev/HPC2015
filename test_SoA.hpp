@@ -17,7 +17,7 @@
 
 namespace SoA {
     
-    size_t getTestSize() {
+    constexpr size_t getTestSize() {
         return 20000000;
     }
     

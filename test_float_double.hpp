@@ -12,7 +12,7 @@
 #include "diffclock.h"
 
 namespace FloatDouble {
-    size_t getTestSize() {
+    size_t constexpr getTestSize() {
         return 200000000;
     }
     

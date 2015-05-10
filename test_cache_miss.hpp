@@ -121,7 +121,7 @@ private:
 };
 
     
-inline size_t getTestSize() {
+inline constexpr size_t getTestSize() {
     return 81000;
 }
 

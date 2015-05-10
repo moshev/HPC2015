@@ -21,7 +21,7 @@ namespace Inline {
         else return cos(sin(atan(f)));
     }
 
-    size_t getTestSize() {
+    constexpr size_t getTestSize() {
         return 200000000ULL;
     }
     

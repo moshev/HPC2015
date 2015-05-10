@@ -12,6 +12,6 @@
 #include <stdio.h>
 namespace Virtual {
     void test();
-    size_t getTestSize();
+    constexpr size_t getTestSize();
 }
 #endif /* defined(__GPAPI__test_virtual__) */

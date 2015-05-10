@@ -66,7 +66,7 @@ struct MobFlags {
          return mob.canSwim() && mob.canShoot() && mob.canRun() && mob.canJump() && mob.canFly() && mob.canBite();
     }
     
-    size_t getTestSize() {
+    size_t constexpr getTestSize() {
         return 50000000;
     }
     

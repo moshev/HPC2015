@@ -13,7 +13,7 @@
 #include <iostream>
 
 namespace Virtual {
-    size_t getTestSize() {
+    constexpr size_t getTestSize() {
         return 100000000;
     }
     
