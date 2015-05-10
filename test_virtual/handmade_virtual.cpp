@@ -73,17 +73,6 @@ void init/*vtable*/() {
 
 Base::FP Base::vtbl[(CLASS_LAST+1) * METHOD_LAST];
 
-int test(int argc, const char* argv[]) {
-    init();
-    
-    Base* der = new Derived2();
-    
-    der->set(196);
-    der->get();
-    
-    return 0;
-}
-    
 //hidding flag in the pointer
 template <typename T>
 void setFlag(T*& ptr, size_t flagIndex, bool value) {

@@ -26,12 +26,13 @@ namespace Virtual {
         
         using namespace Virtual;
         
-        Base** base = new Base*[testSize];
+        std::unique_ptr<std::unique_ptr<Base>[]> base(new std::unique_ptr<Base>[testSize]);
+        
         for (int i = 0; i < testSize; ++i) {
             if (i % 2) {
-                base[i] = new Derived;
+                base[i].reset(new Derived);
             } else {
-                base[i] = new Derived2;
+                base[i].reset(new Derived2);
             }
         }
         
@@ -45,12 +46,12 @@ namespace Virtual {
         auto t1 = getTime();
         std::cout << '\t' << "Handmade vfuncs " << diffclock(t1, t0) << std::endl;
 
-        NBase** nbase = new NBase*[testSize];
+        std::unique_ptr<std::unique_ptr<NBase>[]> nbase(new std::unique_ptr<NBase>[testSize]);
         for (int i = 0; i < testSize; ++i) {
             if (i % 2) {
-                nbase[i] = new NDerived;
+                nbase[i].reset(new NDerived);
             } else {
-                nbase[i] = new NDerived2;
+                nbase[i].reset(new NDerived2);
             }
         }
         

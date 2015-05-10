@@ -72,7 +72,7 @@ struct MobFlags {
     
     void testMobBool() {
         const auto TEST_SIZE = getTestSize();
-        MobBool* mob = new MobBool[TEST_SIZE];
+        std::unique_ptr<MobBool[]> mob(new MobBool[TEST_SIZE]);
         bool areSuperMobs = true;
         for (auto i = 0; i < TEST_SIZE; ++i){
             areSuperMobs &= isSuperMob(mob[i]);
@@ -81,7 +81,7 @@ struct MobFlags {
     
     void testMobFlags() {
         const auto TEST_SIZE = getTestSize();
-        MobFlags* mob = new MobFlags[TEST_SIZE];
+        std::unique_ptr<MobFlags[]> mob(new MobFlags[TEST_SIZE]);
         bool areSuperMobs = true;
         for (auto i = 0; i < TEST_SIZE; ++i){
             areSuperMobs &= isSuperMob(mob[i]);

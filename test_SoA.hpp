@@ -51,7 +51,7 @@ namespace SoA {
     };
     
     struct ParticleSystem_AoS {
-        Particle * particles;
+        std::unique_ptr<Particle[]> particles;
         size_t count;
         
         void update(float dt) {
@@ -67,51 +67,42 @@ namespace SoA {
     //
     struct ParticleSystem_SoA {
         ParticleSystem_SoA(size_t count):count(count) {
-            x = new float[count];
-            y = new float[count];
-            z = new float[count];
-            w = new float[count];
+            x.reset(new float[count]);
+            y.reset(new float[count]);
+            z.reset(new float[count]);
+            w.reset(new float[count]);
             
-            vx = new float[count];
-            vy = new float[count];
-            vz = new float[count];
-            vw = new float[count];
+            vx.reset(new float[count]);
+            vy.reset(new float[count]);
+            vz.reset(new float[count]);
+            vw.reset(new float[count]);
         }
         
-        float * x;
-        float * y;
-        float * z;
-        float * w;
+        std::unique_ptr<float[]> x;
+        std::unique_ptr<float[]> y;
+        std::unique_ptr<float[]> z;
+        std::unique_ptr<float[]> w;
         
-        float * vx;
-        float * vy;
-        float * vz;
-        float * vw;
-        float* a; float* b; float* c; float* d;
-        float* e; float* f; float* g; float* h;
-        float* i; float* j; float* k; float* l;
+        std::unique_ptr<float[]> vx;
+        std::unique_ptr<float[]> vy;
+        std::unique_ptr<float[]> vz;
+        std::unique_ptr<float[]> vw;
+        std::unique_ptr<float[]> a; std::unique_ptr<float[]> b; std::unique_ptr<float[]> c; std::unique_ptr<float[]>  d;
+        std::unique_ptr<float[]> e; std::unique_ptr<float[]> f; std::unique_ptr<float[]> g; std::unique_ptr<float[]>  h;
+        std::unique_ptr<float[]> i; std::unique_ptr<float[]> j; std::unique_ptr<float[]> k; std::unique_ptr<float[]>  l;
         
         size_t count;
         
         void randomize() {
-            struct {
-                void operator()(float* ptr, size_t count) {
-                    for (size_t i = 0; i < count; ++i) {
-                        ptr[i] = randomFloat();
-                    }
-                }
-                
-            } randomizeArr;
-            
-            randomizeArr(x, count);
-            randomizeArr(y, count);
-            randomizeArr(z, count);
-            randomizeArr(w, count);
-            randomizeArr(vx, count);
-            randomizeArr(vy, count);
-            randomizeArr(vz, count);
-            randomizeArr(vw, count);
-            
+            std::for_each(x.get(), x.get() + count, [](float) { return randomFloat(); } );
+            std::for_each(y.get(), y.get() + count, [](float) { return randomFloat(); } );
+            std::for_each(z.get(), z.get() + count, [](float) { return randomFloat(); } );
+            std::for_each(w.get(), w.get() + count, [](float) { return randomFloat(); } );
+            std::for_each(vx.get(), vx.get() + count, [](float) { return randomFloat(); } );
+            std::for_each(vy.get(), vy.get() + count, [](float) { return randomFloat(); } );
+            std::for_each(vz.get(), vz.get() + count, [](float) { return randomFloat(); } );
+            std::for_each(vw.get(), vw.get() + count, [](float) { return randomFloat(); } );
+
         }
         
         void update(float dt) {
@@ -126,9 +117,9 @@ namespace SoA {
     
     
     void AoS() {
-        Particle* particles = new Particle[getTestSize()];
+        std::unique_ptr<Particle[]> particles(new Particle[getTestSize()]);
         ParticleSystem_AoS aos;
-        aos.particles = particles;
+        aos.particles = std::move(particles);
         aos.count = getTestSize();
         auto t0 = getTime();
         for (float f = 0.f; f < 1.f; f += .1f) {

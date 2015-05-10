@@ -15,6 +15,7 @@ namespace Virtual {
     public:
         virtual int get() const = 0;
         virtual void set(int val) = 0;
+        virtual ~NBase() {};
     };
     
     class NDerived : public NBase {
