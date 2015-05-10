@@ -18,14 +18,30 @@
 #include <cmath>
 
 namespace Threads {
+    typedef std::lock_guard<std::mutex> LockGuard;
+    
+    class ThreadGuard {
+        std::thread& t;
+    public:
+        ThreadGuard(std::thread& t_):t(t_){}
+        ~ThreadGuard() {
+            if(t.joinable()) {
+                t.join();
+            }
+        }
+        ThreadGuard(ThreadGuard const&)=delete;
+        ThreadGuard& operator=(ThreadGuard const&)=delete;
+    };
+    
     void testHelloWorld() {
         std::function<void()> helloWorld = [](){std::cout << "Hello World";};
         std::thread t(helloWorld);
-        t.join();
+        ThreadGuard tg(t);
     }
+    
     int getNumThreads() {
-        auto hardwareThreads = std::thread::hardware_concurrency();
-        return hardwareThreads !=0 ? hardwareThreads : 1;
+        const int hardwareThreads = static_cast<int>(std::thread::hardware_concurrency());
+        return std::min(64, hardwareThreads !=0 ? hardwareThreads : 1);
     }
     
     template<typename Iterator, typename T>
@@ -63,8 +79,55 @@ namespace Threads {
         return std::accumulate(results.begin(), results.end(), init);
 
     }
+    
+    std::mutex m;
+    template <typename T>
+    void threadSafePushBack(std::vector<T>& container, const T& elem) {
+        LockGuard guard(m);
+        container.push_back(elem);
+    }
+    
+    int getTestSize() {
+        return 500000000;
+    }
+    
+    void testFalseSharing() {
+        struct Complex {
+            float x, i;
+            Complex(){ x = randomFloat(); i = randomFloat();}
+        };
+        
+        std::unique_ptr<Complex[]> arr(new Complex[getTestSize()]);
+        
+        auto b = getTime();
+        std::for_each(arr.get(), arr.get() + getTestSize(), [](Complex& complex) { complex.x += randomFloat(); complex.i += randomFloat();});
+        auto e = getTime();
+        
+        std::cout << diffclock(e, b) << std::endl;
+        
+        b = getTime();
+        auto sum = [&](bool real) {
+            if (real) {
+                std::for_each(arr.get(), arr.get() + getTestSize(), [](Complex& complex) { complex.x += randomFloat();});
+            } else {
+                std::for_each(arr.get(), arr.get() + getTestSize(), [](Complex& complex) { complex.i += randomFloat();});
+            }
+        };
+        
+        std::thread t0(sum, true);
+        std::thread t1(sum, false);
+        
+        t0.join();
+        t1.join();
+        e = getTime();
+
+        std::cout << diffclock(e, b) << std::endl;
+
+    }
+    
     void test() {
-        testHelloWorld();
+        //testFalseSharing();
+        //testHelloWorld();
     }
 }
 

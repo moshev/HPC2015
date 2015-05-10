@@ -36,7 +36,8 @@ int main(int argc, const char * argv[]) {
     std::cout << "Starting tests ...\n" << std::endl;
 
     auto t0 = getTime();
-    Threads::test();    
+    
+    Threads::test();
     ILP::test();
     Virtual::test();
     FloatDouble::test();

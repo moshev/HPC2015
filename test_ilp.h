@@ -15,7 +15,7 @@
 #include <limits>
 #include <iostream>
 
-namespace ILP {
+namespace ILP {    
     constexpr size_t getTestSize() {
         return 42; //no point in doing this because of the compiler optimizations 
     }
