@@ -189,6 +189,8 @@ namespace ILP {
         testReduction(false);
         testReduction(true);
         
+        std::cout << "\n **** \n\n";
+        
     }
 }
 

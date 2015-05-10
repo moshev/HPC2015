@@ -27,8 +27,11 @@
 
 
 int main(int argc, const char * argv[]) {
-    ILP::test();
     std::cout << "Starting tests ...\n" << std::endl;
+
+    auto t0 = getTime();
+    
+    ILP::test();
     Virtual::test();
     FloatDouble::test();
     DataOrientedDesign::test();
@@ -36,7 +39,11 @@ int main(int argc, const char * argv[]) {
     Inline::test();
     PointerAlias::test();
     CacheMiss::test();
-    std::cout << "Tests completed."  << std::endl;
+    
+    auto t1 = getTime();
+    
+    std::cout << "Tests completed, time " << diffclock(t1, t0) << std::endl;
+    
     return 0;
 }
 
