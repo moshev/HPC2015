@@ -126,7 +126,7 @@ namespace embree
   __forceinline double tanh ( const double x ) { return ::tanh (x); }
   __forceinline double floor( const double x ) { return ::floor (x); }
   __forceinline double ceil ( const double x ) { return ::ceil (x); }
-
+/*
 #if defined(__SSE4_1__)
   __forceinline float mini(float a, float b) { 
     const __m128i ai = _mm_castps_si128(_mm_set_ss(a));
@@ -143,7 +143,7 @@ namespace embree
     const __m128i ci = _mm_max_epi32(ai,bi);
     return _mm_cvtss_f32(_mm_castsi128_ps(ci));
   }
-#endif
+#endif*/
 
   __forceinline     int min(int     a, int     b) { return a<b ? a:b; }
   __forceinline   int64 min(int64   a, int64   b) { return a<b ? a:b; }

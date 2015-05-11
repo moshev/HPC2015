@@ -14,7 +14,7 @@ namespace PointerAlias {
     void test() {
         std::cout << "Testing pointer alias ..." << std::endl;
         auto POINTER_ALIAS_TEST_SIZE = PointerAlias::getTestSize();
-        auto RUN_TIMES = 5;
+        auto RUN_TIMES = 50;
         std::unique_ptr<float[]> a(new float[POINTER_ALIAS_TEST_SIZE]);
         std::unique_ptr<float[]> b(new float[POINTER_ALIAS_TEST_SIZE]);
         std::unique_ptr<float[]> res(new float[POINTER_ALIAS_TEST_SIZE]);
@@ -41,7 +41,7 @@ namespace PointerAlias {
             res0 += diffclock(end0, begin0);
         }
         
-        std::cout << '\t' << "Different Type Time " << res0/ RUN_TIMES << std::endl;
+        std::cout << '\t' << "Different Type Time " << res0/ 1 << std::endl;
         
         for (int t = 0; t < RUN_TIMES; ++t) {
             for (auto i = 0; i < POINTER_ALIAS_TEST_SIZE; ++i) {
@@ -53,7 +53,7 @@ namespace PointerAlias {
             res1 += diffclock(end1, begin1);
         }
         
-        std::cout << '\t' << "Same Type Time " << res1/ RUN_TIMES << std::endl;
+        std::cout << '\t' << "Same Type Time " << res1/ 1 << std::endl;
         
         for (int t = 0; t < RUN_TIMES; ++t) {
             
@@ -66,7 +66,7 @@ namespace PointerAlias {
             res2 += diffclock(end2, begin2);
         }
         
-        std::cout << '\t' << "Different Type No Cast Time " << res2/ RUN_TIMES << std::endl;
+        std::cout << '\t' << "Different Type No Cast Time " << res2/ 1 << std::endl;
         
         for (int t = 0; t < RUN_TIMES; ++t) {
             
@@ -79,9 +79,41 @@ namespace PointerAlias {
             res3 += diffclock(end3, begin3);
         }
         
-        std::cout << '\t' << "Different Type Restrict " << res3 / RUN_TIMES << std::endl;
-        std::cout << "\n **** \n\n";
+        std::cout << '\t' << "Different Type Restrict " << res3 / 1 << std::endl;
+
+#ifdef __AVX__
+        double res4 = 0;
+        for (int t = 0; t < RUN_TIMES; ++t) {
+            
+            for (auto i = 0; i < POINTER_ALIAS_TEST_SIZE; ++i) {
+                a[i] = i; b[i] = i * 2; res[i] = i * 3;
+            }
+            auto begin4 = getTime();
+            PointerAlias::pointerSIMD<embree::ssef>(a.get(), b.get(), res.get(), POINTER_ALIAS_TEST_SIZE);
+            auto end4 = getTime();
+            res4 += diffclock(end4, begin4);
+        }
         
+        std::cout << '\t' << "SSE2  " << res4 / 1 << std::endl;
+        
+        double res5 = 0;
+        for (int t = 0; t < RUN_TIMES; ++t) {
+            
+            for (auto i = 0; i < POINTER_ALIAS_TEST_SIZE; ++i) {
+                a[i] = i; b[i] = i * 2; res[i] = i * 3;
+            }
+            auto begin5 = getTime();
+            PointerAlias::pointerSIMD<embree::avxf>(a.get(), b.get(), res.get(), POINTER_ALIAS_TEST_SIZE);
+            auto end5 = getTime();
+            res5 += diffclock(end5, begin5);
+        }
+        
+        std::cout << '\t' << "AVX  " << res5 / 1 << std::endl;
+
+        
+        std::cout << "\n **** \n\n";
+
     }
+#endif//__AVX__
     
 } //namespace PointerAlias

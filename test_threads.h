@@ -100,10 +100,10 @@ namespace Threads {
         std::unique_ptr<Complex[]> arr(new Complex[getTestSize()]);
         
         auto b = getTime();
-        std::for_each(arr.get(), arr.get() + getTestSize(), [](Complex& complex) { complex.x += randomFloat(); complex.i += randomFloat();});
+        std::for_each(arr.get(), arr.get() + getTestSize(), [](Complex& complex) { complex.x += sinf(complex.x); complex.i += sinf(complex.i);});
         auto e = getTime();
         
-        std::cout << diffclock(e, b) << std::endl;
+        std::cout << "\t Single thread " << diffclock(e, b) << std::endl;
         
         b = getTime();
         auto sum = [&](bool real) {
@@ -121,13 +121,26 @@ namespace Threads {
         t1.join();
         e = getTime();
 
-        std::cout << diffclock(e, b) << std::endl;
-
+        std::cout << "\t Multithread sum #0 " << diffclock(e, b) << std::endl;
+        
+        auto sum2 = [&](int begin, int end) {
+            std::for_each(arr.get() + begin, arr.get() + end, [](Complex& complex) { complex.x += randomFloat(); complex.i += randomFloat();});
+        };
+        b = getTime();
+        std::thread t2(sum2, 0, getTestSize()/2);
+        std::thread t3(sum2, getTestSize()/2, getTestSize());
+        t2.join();
+        t3.join();
+        e = getTime();
+        
+        std::cout << "\t Multithread sum #1 " << diffclock(e, b) << std::endl;
     }
     
     void test() {
-        //testFalseSharing();
+        std::cout << "Testing thread ..." << std::endl;
+        testFalseSharing();
         //testHelloWorld();
+        std::cout << "\n **** \n\n";
     }
 }
 

@@ -32,11 +32,10 @@
 //spin lock, read-write lock, mutex, concurrent collections
 
 int main(int argc, const char * argv[]) {
-    
     std::cout << "Starting tests ...\n" << std::endl;
 
     auto t0 = getTime();
-    
+    PointerAlias::test();
     Threads::test();
     ILP::test();
     Virtual::test();
@@ -44,7 +43,6 @@ int main(int argc, const char * argv[]) {
     DataOrientedDesign::test();
     SoA::test();
     Inline::test();
-    PointerAlias::test();
     CacheMiss::test();
     
     auto t1 = getTime();
