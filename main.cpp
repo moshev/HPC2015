@@ -19,6 +19,7 @@
 #include "test_ilp.h"
 
 #include "test_threads.h"
+#include "test_image.h"
 //shared memory & shared nothing
 //concurrency & parallelism
 //subroutines & couroutines

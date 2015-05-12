@@ -14,7 +14,7 @@ namespace PointerAlias {
     void test() {
         std::cout << "Testing pointer alias ..." << std::endl;
         auto POINTER_ALIAS_TEST_SIZE = PointerAlias::getTestSize();
-        auto RUN_TIMES = 50;
+        auto RUN_TIMES = 500;
         std::unique_ptr<float[]> a(new float[POINTER_ALIAS_TEST_SIZE]);
         std::unique_ptr<float[]> b(new float[POINTER_ALIAS_TEST_SIZE]);
         std::unique_ptr<float[]> res(new float[POINTER_ALIAS_TEST_SIZE]);
