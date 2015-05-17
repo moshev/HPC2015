@@ -20,19 +20,9 @@ namespace PointerAlias {
     void pointerAliasDifferentTypeNoCast(float* a, A* b, B* res, size_t size) ;
     void pointerAliasSameTypeRestrict( float* RESTRICT a,  float*  RESTRICT b,  float* RESTRICT res, size_t size);
     template <typename SIMD>
-    void pointerSIMD(float* a, float* b, float* res, size_t size) {
+    void pointerSIMD(SIMD* RESTRICT sseA, SIMD* RESTRICT sseB, SIMD* RESTRICT sseRes, size_t size) {
         using namespace embree;
-        std::unique_ptr<SIMD[]> sseA(new SIMD[size/SIMD::size]);
-        std::unique_ptr<SIMD[]> sseB(new SIMD[size/SIMD::size]);
-        std::unique_ptr<SIMD[]> sseRes(new SIMD[size/SIMD::size]);
-        
-        for (int i = 0; i < size; i+=SIMD::size) {
-            sseA[i/SIMD::size].load(a+i);
-            sseB[i/SIMD::size].load(b+i);
-            sseRes[i/SIMD::size].load(res+i);
-        }
-        
-        for (int i = 0; i < size/SIMD::size; ++i) {
+        for (int i = 0; i < size; ++i) {
             sseA[i] += sseRes[i];
             sseB[i] += sseRes[i];
             
