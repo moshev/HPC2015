@@ -1,13 +1,4 @@
-//
-//  threads.h
-//  GPAPI
-//
-//  Created by savage309 on 10.05.15.
-//  Copyright (c) 2015 г. savage309. All rights reserved.
-//
-
-#ifndef GPAPI_threads_h
-#define GPAPI_threads_h
+#pragma once
 
 #include <thread>
 #include <iostream>
@@ -143,5 +134,3 @@ namespace Threads {
         std::cout << "\n **** \n\n";
     }
 }
-
-#endif

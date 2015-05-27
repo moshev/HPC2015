@@ -1,9 +1,5 @@
-//
-//  pointer_aliash.cpp
-//  GPAPI
-//
-//  Created by savage309 on 6.05.15.
-//  Copyright (c) 2015 г. savage309. All rights reserved.
+#pragma once
+
 //
 #include "test_pointer_alias_impl.h"
 namespace PointerAlias {

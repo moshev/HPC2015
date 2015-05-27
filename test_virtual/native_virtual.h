@@ -1,13 +1,4 @@
-//
-//  native_virtual.h
-//  GPAPI
-//
-//  Created by savage309 on 9.05.15.
-//  Copyright (c) 2015 г. savage309. All rights reserved.
-//
-
-#ifndef __GPAPI__native_virtual__
-#define __GPAPI__native_virtual__
+#pragma once
 
 #include <stdio.h>
 namespace Virtual {
@@ -40,4 +31,3 @@ namespace Virtual {
         }
     };
 }
-#endif /* defined(__GPAPI__native_virtual__) */

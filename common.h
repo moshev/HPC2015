@@ -1,13 +1,4 @@
-//
-//  common.h
-//  GPAPI
-//
-//  Created by savage309 on 6.05.15.
-//  Copyright (c) 2015 г. savage309. All rights reserved.
-//
-
-#ifndef GPAPI_common_h
-#define GPAPI_common_h
+#pragma once
 
 #define RESTRICT __restrict__
 #define NO_INLINE __attribute__ ((noinline))
@@ -32,6 +23,3 @@ inline float randomFloat() {
 inline int randomInt(int min, int max) {
     return min + (max - min) * randomFloat();
 }
-
-
-#endif

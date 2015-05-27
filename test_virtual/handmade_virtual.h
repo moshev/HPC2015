@@ -1,13 +1,4 @@
-//
-//  handmade_virtual.h
-//  GPAPI
-//
-//  Created by savage309 on 9.05.15.
-//  Copyright (c) 2015 г. savage309. All rights reserved.
-//
-
-#ifndef __GPAPI__handmade_virtual__
-#define __GPAPI__handmade_virtual__
+#pragma once
 
 #include <stdio.h>
 #include <stdint.h>
@@ -152,6 +143,3 @@ RETURNTYPE NAME(PARAM0 p0) { typedef RETURNTYPE (*name_t)(CLASS&, PARAM0); retur
     };
     void init/*vtable*/();
 }
-
-
-#endif /* defined(__GPAPI__handmade_virtual__) */

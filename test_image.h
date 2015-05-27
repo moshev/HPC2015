@@ -1,13 +1,5 @@
-//
-//  test_image.h
-//  GPAPI
-//
-//  Created by savage309 on 12.05.15.
-//  Copyright (c) 2015 г. savage309. All rights reserved.
-//
+#pragma once
 
-#ifndef GPAPI_test_image_h
-#define GPAPI_test_image_h
 #include "simd/simd.h"
 
 namespace Image {
@@ -203,4 +195,3 @@ namespace Image {
     }
 }
 
-#endif

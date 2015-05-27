@@ -1,4 +1,8 @@
+
+//this disable the mmx instruction in the implementations and speeds up the SSE & AVX code a lot
+//File edited by Blagoves Taskov (taskov@gmail.com)
 #define USE_SSE2
+
 /* SIMD (SSE1+MMX or SSE2) implementation of sin, cos, exp and log
 
    Inspired by Intel Approximate Math library, and based on the

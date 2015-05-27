@@ -1,19 +1,9 @@
-//
-//  SoA.h
-//  GPAPI
-//
-//  Created by savage309 on 6.05.15.
-//  Copyright (c) 2015 г. savage309. All rights reserved.
-//
-
-#ifndef GPAPI_SoA_h
-#define GPAPI_SoA_h
+#pragma once
 
 #include <cmath>
 #include <memory>
 #include "common.h"
 #include <iostream>
-
 
 namespace SoA {
     
@@ -154,5 +144,3 @@ namespace SoA {
     }
     
 } //namespace SoA
-
-#endif

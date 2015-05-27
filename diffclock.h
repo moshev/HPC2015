@@ -1,14 +1,4 @@
-//
-//  diffclock.h
-//  GPAPI
-//
-//  Created by savage309 on 6.05.15.
-//  Copyright (c) 2015 г. savage309. All rights reserved.
-//
-
-#ifndef GPAPI_diffclock_h
-#define GPAPI_diffclock_h
-
+#pragma once
 
 #include <ctime>
 #include <chrono>
@@ -22,5 +12,3 @@ inline double diffclock(std::chrono::time_point<std::chrono::system_clock> end, 
       std::chrono::duration<double> elapsed_seconds = end-start;
     return elapsed_seconds.count();
 }
-
-#endif
