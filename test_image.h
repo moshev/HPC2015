@@ -14,15 +14,36 @@ namespace Image {
     using std::pow;
     embree::ssef exp(const embree::ssef& s) {
         embree::ssef res;
-        res.m128 = exp(s.m128);
+        res.m128 = exp_ps(s.m128);
         return res;
     }
     embree::ssef pow(embree::ssef s, float pow) {
         v4sf logps = (log_ps(s.m128));
         embree::ssef ss;
         ss.m128 = logps;
-        return exp(pow*ss);
+        return exp_ps(pow*ss);
     }
+    
+#ifdef __AVX__
+    embree::avxf pow(embree::avxf s, float p) {
+        //v4sf logps = (log_ps(s.m128));
+        //embree::ssef ss;
+        //ss.m128 = logps;
+        embree::ssef s0 = embree::extract<0>(s);
+        embree::ssef s1 = embree::extract<1>(s);
+        s0 = pow(s0, p);
+        s1 = pow(s1, p);
+        return  embree::avxf(s0, s1);
+    }
+    
+    embree::avxf exp2(embree::avxf s, float pow) {
+        embree::ssef s0 = embree::extract<0>(s);
+        embree::ssef s1 = embree::extract<1>(s);
+        s0 = exp(s0);
+        s1 = exp(s1);
+        return embree::avxf(s0, s1);
+    }
+#endif
     struct Float {
         enum { size = 1 };
         float f;
@@ -78,17 +99,26 @@ namespace Image {
     
     template <>
     embree::ssef randomColor<embree::ssef>() {
-        embree::ssef f;
+        embree::ssef f(42.f);
         return f;
     }
-    
+#ifdef __AVX__
+    template <>
+    embree::avxf randomColor<embree::avxf>() {
+        embree::avxf f(42.f);
+        return f;
+    }
+#endif
+     
     template <typename T>
     struct Image {
         int width, height, colorSpace, flags;
         float gamma, colorMult;
         std::unique_ptr<T[]> colors;
-        Image(int width, int height):width(width), height(height) {
-            colors.reset(new T[width * height / (embree::avxf::size/T::size)]);
+        Image(int w, int h) {
+            width = w;
+            height = h / T::size;
+            colors.reset(new T[width * height]);
             gamma = randomFloat();
             colorMult = randomFloat();
             colorSpace = randomInt(0, 2);
@@ -101,33 +131,75 @@ namespace Image {
         }
         
     };
-    
-    void test() {
-        Image<Float> img(1024, 768);
+  
+    float test() {
+        const int SIZE = 4096;
         
+        Image<Float> img(SIZE, SIZE);
+        Image<embree::ssef> img2(SIZE, SIZE);
+#ifdef __AVX__
+        Image<embree::avxf> img3(SIZE, SIZE);
+#endif
         Float blendColor = randomColor<Float>();
         float blend = randomFloat();
-        
+        float res = 0.f;
+        auto s0 = getTime();
+        DISABLE_SIMD_UNROLL
         for (int i = 0; i < img.width; ++i) {
+            DISABLE_SIMD_UNROLL
             for (int j = 0; j < img.height; ++j) {
-                apply(img.flags, img.gamma, img.colorSpace, img.colors[i + img.width*j], blendColor, img.colorMult, blend);
+                //printf("%i %i\n", i, j);
+                Float f = apply(img.flags, img.gamma, img.colorSpace, img.colors[i + img.width*j], blendColor, img.colorMult, blend);
+                res += f.f;
             }
         }
         
+        
+        auto e0 = getTime();
+        //DISABLE_AUTO_VECTORIZATION;
+        auto s01 = getTime();
+        //DISABLE_SIMD_UNROLL
+        DISABLE_SIMD_UNROLL
         for (int j = 0; j < img.width; ++j) {
+            DISABLE_SIMD_UNROLL
             for (int i = 0; i < img.height; ++i) {
-                apply(img.flags, img.gamma, img.colorSpace, img.colors[i + img.width*j], blendColor, img.colorMult, blend);
+                Float f = apply(img.flags, img.gamma, img.colorSpace, img.colors[i + img.width*j], blendColor, img.colorMult, blend);
+                res += f.f;
             }
         }
+        auto e01 = getTime();
         
-        Image<embree::ssef> img2(1024, 768);
-        embree::ssef blendColor2;// = randomColor<Float>();
-
+        embree::ssef blendColor2(0.f);
+        
+        embree::ssef resSSE(0.f, 0.f, 0.f, 0.f);
+        auto s1 = getTime();
+        //DISABLE_SIMD_UNROLL
         for (int i = 0; i < img2.width; ++i) {
-            for (int j = 0; j < img2.height; ++j) {
-                apply(img2.flags, img2.gamma, img2.colorSpace, img2.colors[i + img2.width*j], blendColor2, img2.colorMult, blend);
+          //  DISABLE_SIMD_UNROLL
+            for (int j = 0; j < img2.height / embree::ssef::size; ++j) {
+                resSSE += apply(img2.flags, img2.gamma, img2.colorSpace, img2.colors[i + img2.width*j], blendColor2, img2.colorMult, blend);
             }
         }
+        auto e1 = getTime();
+#ifdef __AVX__
+        embree::avxf blendColor3(0.f);
+        embree::avxf resAVX(0.f);
+        auto s2 = getTime();
+        DISABLE_SIMD_UNROLL
+        for (int i = 0; i < img3.width; ++i) {
+            DISABLE_SIMD_UNROLL
+            for (int j = 0; j < img3.height / embree::avxf::size; ++j) {
+               resAVX += apply(img3.flags, img3.gamma, img3.colorSpace, img3.colors[i + img3.width*j], blendColor3, img3.colorMult, blend);
+            }
+        }
+#endif
+        auto e2 = getTime();
+
+        return  res + resSSE[0] + resSSE[1] + resSSE[3] + resSSE[2]
+#ifdef __AVX__ 
+        + resAVX[0] + resAVX[1] + resAVX[2] + resAVX[3] + resAVX[4] + resAVX[5] + resAVX[6] +resAVX[7]
+#endif
+        ;
     }
 }
 

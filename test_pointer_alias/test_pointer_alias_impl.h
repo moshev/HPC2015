@@ -9,9 +9,9 @@
 #ifndef GPAPI_pointer_alias_h
 #define GPAPI_pointer_alias_h
 #include "common.h"
-#ifdef __AVX__
 #include "simd/simd.h"
-#endif//__AVX__
+
+
 namespace PointerAlias {
     struct A;
     struct B;
@@ -22,7 +22,7 @@ namespace PointerAlias {
     template <typename SIMD>
     void pointerSIMD(SIMD* RESTRICT sseA, SIMD* RESTRICT sseB, SIMD* RESTRICT sseRes, size_t size) {
         using namespace embree;
-        for (int i = 0; i < size; ++i) {
+        for (int i = 1; i < size - 1; ++i) {
             sseA[i] += sseRes[i];
             sseB[i] += sseRes[i];
             
