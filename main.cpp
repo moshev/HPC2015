@@ -5,7 +5,7 @@
 #include "diffclock.h"
 
 #include <algorithm>
-
+#include "common.h"
 
 #include "test_cache_miss.hpp"
 #include "test_pointer_alias/test_pointer_alias.h"
@@ -13,13 +13,13 @@
 #include "test_inline/test_inline.h"
 #include "test_data_oriented_design.hpp"
 #include "test_float_double.hpp"
-
 #include "test_virtual/test_virtual.h"
-
 #include "test_ilp.h"
-
 #include "test_threads.h"
 #include "test_image.h"
+#include "test_factoriel.hpp"
+
+
 //shared memory & shared nothing
 //concurrency & parallelism
 //subroutines & couroutines
@@ -31,12 +31,18 @@
 //flynn taxonomy
 //conditional variables / monitors
 //spin lock, read-write lock, mutex, concurrent collections
-
+//roofline model
+using namespace std;
 int main(int argc, const char * argv[]) {
+    //main2();
+    
     std::cout << "Starting tests ...\n" << std::endl;
 
     auto t0 = getTime();
+
+    Factoriel::test();
     PointerAlias::test();
+    Image::test();
     Threads::test();
     ILP::test();
     Virtual::test();

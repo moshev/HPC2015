@@ -1,7 +1,4 @@
-
-
-#ifndef GPAPI_data_oriented_design_h
-#define GPAPI_data_oriented_design_h
+#pragma once
 
 #include "diffclock.h"
 
@@ -98,5 +95,3 @@ struct MobFlags {
     }
     
 }//namespace DataOrientedDesign
-
-#endif

@@ -8,7 +8,7 @@ namespace PointerAlias {
     void test() {
         std::cout << "Testing pointer alias ..." << std::endl;
         auto POINTER_ALIAS_TEST_SIZE = PointerAlias::getTestSize();
-        auto RUN_TIMES = 3;
+        auto RUN_TIMES = 4;
         std::unique_ptr<float[]> a(new float[POINTER_ALIAS_TEST_SIZE]);
         std::unique_ptr<float[]> b(new float[POINTER_ALIAS_TEST_SIZE]);
         std::unique_ptr<float[]> res(new float[POINTER_ALIAS_TEST_SIZE]);
@@ -33,7 +33,7 @@ namespace PointerAlias {
             PointerAlias::B* resUnsigned = (PointerAlias::B*)res.get();
             PointerAlias::pointerAliasDifferentType(a.get(), bInt, resUnsigned, POINTER_ALIAS_TEST_SIZE);
             auto end0 = getTime();
-            if (t != 0)
+            if (t > 1)
                 res0 += diffclock(end0, begin0);
         }
         
@@ -46,7 +46,7 @@ namespace PointerAlias {
             auto begin1 = getTime();
             PointerAlias::pointerAliasSameType(a.get(), b.get(), res.get(), POINTER_ALIAS_TEST_SIZE);
             auto end1 = getTime();
-            if (t != 0)
+            if (t > 1)
                 res1 += diffclock(end1, begin1);
         }
         
@@ -61,7 +61,7 @@ namespace PointerAlias {
             auto begin2 = getTime();
             PointerAlias::pointerAliasDifferentTypeNoCast(a.get(), (PointerAlias::A*)b.get(), (PointerAlias::B*)res.get(), POINTER_ALIAS_TEST_SIZE);
             auto end2 = getTime();
-            if (t != 0)
+            if (t > 1)
                 res2 += diffclock(end2, begin2);
         }
         
@@ -74,7 +74,7 @@ namespace PointerAlias {
             auto begin3 = getTime();
             PointerAlias::pointerAliasSameTypeRestrict(a.get(), b.get(), res.get(), POINTER_ALIAS_TEST_SIZE);
             auto end3 = getTime();
-            if (t != 0)
+            if (t > 1)
                 res3 += diffclock(end3, begin3);
         }
         
@@ -102,7 +102,7 @@ namespace PointerAlias {
             
             PointerAlias::pointerSIMD<embree::ssef>(sseA.get(), sseB.get(), sseRes.get(), POINTER_ALIAS_TEST_SIZE/embree::ssef::size);
             auto end4 = getTime();
-            if (t != 0)
+            if (t > 1)
                 res4 += diffclock(end4, begin4);
         }
         
@@ -132,7 +132,7 @@ namespace PointerAlias {
             auto begin5 = getTime();
             PointerAlias::pointerSIMD<embree::avxf>(avxA.get(), avxB.get(), avxRes.get(), POINTER_ALIAS_TEST_SIZE/embree::avxf::size);
             auto end5 = getTime();
-            if (t != 0)
+            if (t > 1)
                 res5 += diffclock(end5, begin5);
         }
         
