@@ -6,8 +6,13 @@
 #include <cstdlib>
 #include <vector>
 #include <list>
+#include <algorithm>
 
 #include "diffclock.h"
+
+#ifdef _MSC_VER
+#define constexpr static const
+#endif
 
 namespace CacheMiss {
 template <typename T>
@@ -182,6 +187,87 @@ inline void cacheMissTest() {
     if(!listCustom.empty()) printf("Bug in custom list test\n");
 }
 
+
+static const int R = 1300;
+static const int C = 1300;
+
+typedef float data_t;
+typedef double accum_t;
+
+static data_t data[R][C];
+static accum_t dataSum[C];
+
+inline void fillSumData()
+{
+	for (int r = 0; r < R; ++r)
+	{
+		for (int c = 0; c < C; ++c)
+			data[r][c] = randomInt(0,std::numeric_limits<data_t>::max());
+	}
+}
+
+inline void testVertSum1()
+{
+
+	for (int c = 0; c < C; ++c)
+	{
+		unsigned long s = 0;
+		for (int r = 0; r < R; ++r)
+			s += data[r][c];
+
+		dataSum[c] = s;
+	}
+
+}
+
+
+// Row sum outsourced to functinon to overcome too smart MSVS 2013 optimizer
+inline void __fastcall addRowToSum(data_t const * row, accum_t * sum, int n)
+{
+	while (n--)
+		*sum+++=(accum_t)(*row++); // 80's style optimization
+}
+
+inline void testVertSum2()
+{
+		
+	for (int c = 0; c < C; ++c)
+		dataSum[c] = 0;
+
+	for (int r = 0; r < R; ++r)
+	{
+		addRowToSum(&data[r][0], &dataSum[0], C);
+	}
+
+}
+
+
+double traverseVertTime = 0;
+double traverseHorTime = 0;
+
+constexpr size_t testIterations = 42;
+
+void cacheMissTest2()
+{
+
+	fillSumData();
+
+	for (size_t k = 0; k < testIterations; ++k)
+	{
+		auto vTimeStart = getTime();
+		testVertSum1();
+		auto vTimeEnd = getTime();
+		traverseVertTime += diffclock(vTimeEnd, vTimeStart);
+
+		auto hTimeStart = getTime();
+		testVertSum2();
+		auto hTimeEnd = getTime();
+		traverseHorTime += diffclock(hTimeEnd, hTimeStart);
+	}
+
+}
+
+
 inline void test() {
     std::cout << "Testing cache misses ..." << std::endl;
     const double testTimes = 1.0;
@@ -193,7 +279,13 @@ inline void test() {
     std::cout << '\t' << "Std list time:" << stdListTime / testTimes << std::endl;
     std::cout << '\t' << "Custom vec time:" << customVecTime / testTimes << std::endl;
     std::cout << '\t' << "Custom list time:" << customListTime / testTimes<< std::endl;
+	std::cout << "\n **** \n\n";
+
     
+	std::cout << "Testing cache misses 2 ..." << std::endl;
+	cacheMissTest2();
+	std::cout << "\t Horizontal traverse time : " << traverseHorTime << std::endl;
+	std::cout << "\t Vertical traverse time : " << traverseVertTime << std::endl;
     std::cout << "\n **** \n\n";
     
 }
