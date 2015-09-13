@@ -1,3 +1,4 @@
+
 #include "test_inline_impl.h"
 #include <cmath>
 namespace Inline {

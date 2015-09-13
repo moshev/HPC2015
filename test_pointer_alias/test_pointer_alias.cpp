@@ -1,5 +1,3 @@
-
-
 #include <stdio.h>
 #include "test_pointer_alias.h"
 #include "diffclock.h"

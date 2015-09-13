@@ -3,7 +3,6 @@
 #include "common.h"
 #include "simd/simd.h"
 
-
 namespace PointerAlias {
     struct A;
     struct B;

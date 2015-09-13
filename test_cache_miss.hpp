@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <vector>
 #include <list>
+#include <algorithm>
 
 #include "common.h"
 
@@ -174,11 +175,38 @@ inline void test() {
         eraseContainer(listCustom);
     };
     
+    //-----
+    
+    auto numRuns = 256;
+    auto l1size = 32 * 1024 / sizeof(float) /*ints*/;
+    auto size = l1size * 16;
+    std::unique_ptr<float[]> array(new float[size]);
+    std::fill(array.get(), array.get() + size, 0.f);
+    
+    auto test4 = [&] {
+        for (int i=0; i<numRuns; i++)
+            for (int j=0; j<size; j++)
+                array[j] = 2.3*array[j]+1.2;
+    };
+    
+    auto test5 = [&] {
+        int blockstart = 0;
+        const auto numBuckets = size/l1size;
+        for (int b=0; b<numBuckets; b++) {
+            for (int i=0; i<numRuns; i++) {
+                for (int j=0; j<l1size; j++)
+                    array[blockstart+j] = 2.3*array[blockstart+j]+1.2;
+            }
+            blockstart += l1size;
+        }
+    };
     
     ADD_BENCHMARK("CacheMiss \t std::vector", test0);
     ADD_BENCHMARK("CacheMiss \t std::list", test1);
     ADD_BENCHMARK("CacheMiss \t custom vector", test2);
     ADD_BENCHMARK("CacheMiss \t custom vector", test3);
+    //ADD_BENCHMARK("CacheMiss \t linear add", test4);
+    //ADD_BENCHMARK("CacheMiss \t bucket add", test5);
 
     benchpress::run_benchmarks(benchpress::options());
     
