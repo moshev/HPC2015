@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <limits>
 #include <iostream>
+#include "common.h"
 
 namespace ILP {    
     constexpr size_t getTestSize() {
@@ -21,7 +22,8 @@ namespace ILP {
         
         auto test0 = [&](){
             UNROLL
-            for (int i =0 ; i < getTestSize(); ++i) {
+            for (int i = 0 ; i < getTestSize(); ++i) {
+                { asm(""); }
                 x = y * z;
                 q += z + x + x;
                 x = a + b;
@@ -32,6 +34,7 @@ namespace ILP {
         auto test1 = [&]() {
             UNROLL
             for (int i = 0 ; i < getTestSize(); ++i) {
+                { asm(""); }
                 float x0 = y * z;
                 q += z + x0 + x0;
                 x = a + b;
@@ -152,7 +155,7 @@ namespace ILP {
         };
 
         auto test1 = [&] {
-            int v0 = v;
+            int& v0 = v;
             int v1 = std::numeric_limits<int>::min();
             int v2 = std::numeric_limits<int>::min();
             int v3 = std::numeric_limits<int>::min();
@@ -166,7 +169,6 @@ namespace ILP {
             v0 = std::max(v0, v1);
             v0 = std::max(v0, v2);
             v0 = std::max(v0, v3);
-            
         };
         
         

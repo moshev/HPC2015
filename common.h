@@ -29,6 +29,8 @@
 #include <cmath>
 #include <cstdlib>
 
+#define DISABLE_REDUNDANT_CODE_OPT() { asm(""); }
+
 #include "benchpress/benchpress.hpp"
 
 #define ADD_BENCHMARK(name, function) { BENCHMARK(name, [&](benchpress::context* ctx) { for (size_t i = 0; i < ctx->num_iterations(); ++i) { function(); } });}
