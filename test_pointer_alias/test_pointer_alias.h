@@ -5,6 +5,6 @@
 namespace PointerAlias {
     struct A{};
     struct B{};
-    inline constexpr size_t getTestSize() { return 100000000;    }
+    inline constexpr size_t getTestSize() { return 1 << 20;    }
     void test();
 }

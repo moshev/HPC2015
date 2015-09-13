@@ -125,6 +125,7 @@ namespace Image {
     };
   
     float test() {
+        printf("Testing image processing...\n");
         const int SIZE = 4096;
         
         Image<Float> img(SIZE, SIZE);
@@ -135,63 +136,70 @@ namespace Image {
         Float blendColor = randomColor<Float>();
         float blend = randomFloat();
         float res = 0.f;
-        auto s0 = getTime();
-        DISABLE_SIMD_UNROLL
-        for (int i = 0; i < img.width; ++i) {
+        
+        auto test0 = [&] {
             DISABLE_SIMD_UNROLL
-            for (int j = 0; j < img.height; ++j) {
-                //printf("%i %i\n", i, j);
-                Float f = apply(img.flags, img.gamma, img.colorSpace, img.colors[i + img.width*j], blendColor, img.colorMult, blend);
-                res += f.f;
+            for (int i = 0; i < img.width; ++i) {
+                DISABLE_SIMD_UNROLL
+                for (int j = 0; j < img.height; ++j) {
+                    Float f = apply(img.flags, img.gamma, img.colorSpace, img.colors[i + img.width*j], blendColor, img.colorMult, blend);
+                    res += f.f;
+                }
             }
-        }
+        };
         
         
-        auto e0 = getTime();
-        //DISABLE_AUTO_VECTORIZATION;
-        auto s01 = getTime();
-        //DISABLE_SIMD_UNROLL
-        DISABLE_SIMD_UNROLL
-        for (int j = 0; j < img.width; ++j) {
+        auto test1 = [&] {
             DISABLE_SIMD_UNROLL
-            for (int i = 0; i < img.height; ++i) {
-                Float f = apply(img.flags, img.gamma, img.colorSpace, img.colors[i + img.width*j], blendColor, img.colorMult, blend);
-                res += f.f;
+            for (int j = 0; j < img.width; ++j) {
+                DISABLE_SIMD_UNROLL
+                for (int i = 0; i < img.height; ++i) {
+                    Float f = apply(img.flags, img.gamma, img.colorSpace, img.colors[i + img.width*j], blendColor, img.colorMult, blend);
+                    res += f.f;
+                }
             }
-        }
-        auto e01 = getTime();
+        };
         
         embree::ssef blendColor2(0.f);
         
         embree::ssef resSSE(0.f, 0.f, 0.f, 0.f);
-        auto s1 = getTime();
-        //DISABLE_SIMD_UNROLL
-        for (int i = 0; i < img2.width; ++i) {
-          //  DISABLE_SIMD_UNROLL
-            for (int j = 0; j < img2.height / embree::ssef::size; ++j) {
-                resSSE += apply(img2.flags, img2.gamma, img2.colorSpace, img2.colors[i + img2.width*j], blendColor2, img2.colorMult, blend);
+        
+        auto test2 = [&] {
+            DISABLE_SIMD_UNROLL
+            for (int i = 0; i < img2.width; ++i) {
+                DISABLE_SIMD_UNROLL
+                for (int j = 0; j < img2.height / embree::ssef::size; ++j) {
+                    resSSE += apply(img2.flags, img2.gamma, img2.colorSpace, img2.colors[i + img2.width*j], blendColor2, img2.colorMult, blend);
+                }
             }
-        }
-        auto e1 = getTime();
+        };
 #ifdef __AVX__
         embree::avxf blendColor3(0.f);
         embree::avxf resAVX(0.f);
-        auto s2 = getTime();
-        DISABLE_SIMD_UNROLL
-        for (int i = 0; i < img3.width; ++i) {
+        
+        auto test3 = [&] {
             DISABLE_SIMD_UNROLL
-            for (int j = 0; j < img3.height / embree::avxf::size; ++j) {
-               resAVX += apply(img3.flags, img3.gamma, img3.colorSpace, img3.colors[i + img3.width*j], blendColor3, img3.colorMult, blend);
+            for (int i = 0; i < img3.width; ++i) {
+                DISABLE_SIMD_UNROLL
+                for (int j = 0; j < img3.height / embree::avxf::size; ++j) {
+                   resAVX += apply(img3.flags, img3.gamma, img3.colorSpace, img3.colors[i + img3.width*j], blendColor3, img3.colorMult, blend);
+                }
             }
-        }
+        };
 #endif
-        auto e2 = getTime();
 
+        ADD_BENCHMARK("Image \t Column", test0);
+        ADD_BENCHMARK("Image \t Row", test1);
+        ADD_BENCHMARK("Image \t SSE", test2);
+        ADD_BENCHMARK("Image \t AVX", test3);
+        benchpress::run_benchmarks(benchpress::options());
+        
         return  res + resSSE[0] + resSSE[1] + resSSE[3] + resSSE[2]
 #ifdef __AVX__ 
         + resAVX[0] + resAVX[1] + resAVX[2] + resAVX[3] + resAVX[4] + resAVX[5] + resAVX[6] +resAVX[7]
 #endif
         ;
+        
     }
 }
 

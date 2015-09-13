@@ -13,29 +13,29 @@ namespace Inline {
     }
 
     constexpr size_t getTestSize() {
-        return 200000000ULL;
+        return 2_million;
     }
     
     void test(){
         std::cout << "Testing inlined functions ..." << std::endl;
         float res = 0.f;
         const auto TEST_SIZE = getTestSize();
-        auto begin0 = getTime();
-        for(size_t a = 0; a < TEST_SIZE; ++a)
-            for(int b = 0; b < 5; ++b)
-                res += calcInline(b);
-        auto end0 = getTime();
-        std::cout << '\t' << "inline " << diffclock(end0, begin0) << std::endl;
-        
-        auto begin1 = getTime();
+
+        auto test0 = [&] {
         for(size_t a = 0; a < TEST_SIZE; ++a)
             for(int b = 0; b < 5; ++b)
                 res += calcNoInline(b);
-        auto end1 = getTime();
-        std::cout << '\t' << "no inline " << diffclock(end1, begin1) << std::endl;
+        };
         
-
-        std::cout << "\n **** \n\n";
+        auto test1 = [&] {
+            for(size_t a = 0; a < TEST_SIZE; ++a)
+                for(int b = 0; b < 5; ++b)
+                    res += calcInline(b);
+        };
+        
+        ADD_BENCHMARK("Inlining \t NoInline", test0);
+        ADD_BENCHMARK("Inlining \t Inline", test1);
+        benchpress::run_benchmarks(benchpress::options());
     }
 
 } //namespace Inline

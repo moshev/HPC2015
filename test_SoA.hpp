@@ -8,7 +8,7 @@
 namespace SoA {
     
     constexpr size_t getTestSize() {
-        return 20000000;
+        return 20_million;
     }
     
     struct Particle {
@@ -111,13 +111,13 @@ namespace SoA {
         ParticleSystem_AoS aos;
         aos.particles = std::move(particles);
         aos.count = getTestSize();
-        auto t0 = getTime();
-        for (float f = 0.f; f < 1.f; f += .1f) {
-            aos.update(f);
-        }
-        auto t1 = getTime();
-        std::cout << '\t' << "time AoS " << diffclock(t1, t0) << std::endl;
-
+        auto test0 = [&] {
+            for (float f = 0.f; f < 1.f; f += .1f) {
+                aos.update(f);
+            }
+        };
+        ADD_BENCHMARK("SoA vs AoS \t AoS", test0);
+        benchpress::run_benchmarks(benchpress::options());
     }
     
     void SoA() {
@@ -126,13 +126,14 @@ namespace SoA {
         
         soa.randomize();
         
-        auto t0 = getTime();
-        for (float f = 0.f; f < 1.f; f += .1f) {
-            soa.update(f);
-        }
-        auto t1 = getTime();
+        auto test0 = [&] {
+            for (float f = 0.f; f < 1.f; f += .1f) {
+                soa.update(f);
+            }
+        };
         
-        std::cout << '\t' << "time SoA " << diffclock(t1, t0) << std::endl;
+        ADD_BENCHMARK("SoA vs AoS \t SoA", test0);
+        benchpress::run_benchmarks(benchpress::options());
     
     }
     
@@ -140,7 +141,6 @@ namespace SoA {
         std::cout << "Testing SoA vs AoS ..." << std::endl;
         AoS();
         SoA();
-        std::cout << "\n **** \n\n";
     }
     
 } //namespace SoA

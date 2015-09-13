@@ -4,7 +4,7 @@
 
 namespace FloatDouble {
     size_t constexpr getTestSize() {
-        return 200000000;
+        return 1_million;
     }
     
     NO_INLINE
@@ -48,17 +48,20 @@ namespace FloatDouble {
         std::cout << "Testing float vs double ..." << std::endl;
         
         auto d = 0.0;
-        auto time0 = getTime();
-        d += testDouble(d);
-        auto time1 = getTime();
-        std::cout << '\t' << "Double " << diffclock(time1, time0) << std::endl;
-
-        auto f = 0.0f;
-        auto time2 = getTime();
-        f += testFloat(d);
-        auto time3 = getTime();
         
-        std::cout << '\t' << "Float " << diffclock(time3, time2) << std::endl;
-        std::cout << "\n **** \n\n";
+        auto test0 = [&] {
+            d += testDouble(d);
+        };
+        
+        auto f = 0.0f;
+        auto test1 = [&] {
+            f += testFloat(d);
+        };
+        
+        ADD_BENCHMARK("FloatVSDouble \t Double", test0);
+        ADD_BENCHMARK("FloatVSDouble \t Float", test1);
+        
+        benchpress::run_benchmarks(benchpress::options());
+        
     }
 }

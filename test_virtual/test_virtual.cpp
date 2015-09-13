@@ -7,7 +7,7 @@
 
 namespace Virtual {
     constexpr size_t getTestSize() {
-        return 100000000;
+        return 1_million;
     }
     
     void test() {
@@ -29,17 +29,18 @@ namespace Virtual {
             }
         }
         
-        auto t0 = getTime();
-        for (int i = 0; i < testSize; ++i) {
-            base[i]->set(i * i);
-            if (base[i]->get() > 5) {
-                base[i]->set(base[i]->get() + 1);
+        auto test0 = [&] {
+            for (int i = 0; i < testSize; ++i) {
+                base[i]->set(i * i);
+                if (base[i]->get() > 5) {
+                    base[i]->set(base[i]->get() + 1);
+                }
             }
-        }
-        auto t1 = getTime();
-        std::cout << '\t' << "Handmade vfuncs " << diffclock(t1, t0) << std::endl;
-
+        };
+        
         std::unique_ptr<std::unique_ptr<NBase>[]> nbase(new std::unique_ptr<NBase>[testSize]);
+        
+    
         for (int i = 0; i < testSize; ++i) {
             if (i % 2) {
                 nbase[i].reset(new NDerived);
@@ -48,17 +49,19 @@ namespace Virtual {
             }
         }
         
-        auto t2 = getTime();
-        for (int i = 0; i < testSize; ++i) {
-            nbase[i]->set(i * i);
-            if (nbase[i]->get() > 5) {
-                nbase[i]->set(nbase[i]->get() + 1);
+        auto test1 = [&] {
+            for (int i = 0; i < testSize; ++i) {
+                nbase[i]->set(i * i);
+                if (nbase[i]->get() > 5) {
+                    nbase[i]->set(nbase[i]->get() + 1);
+                }
             }
-        }
-        auto t3 = getTime();
+        };
         
-        std::cout << '\t' << "Native vfuncs " << diffclock(t3, t2) << std::endl;
-        std::cout << "\n **** \n\n";
+        ADD_BENCHMARK("VirtualFunctions \t Native", test0);
+        ADD_BENCHMARK("VirtualFunctions \t HandMade", test1);
+        
+        benchpress::run_benchmarks(benchpress::options());
 
     }
 }

@@ -2,10 +2,10 @@
 #include <cmath>
 #include <memory>
 
-#include "diffclock.h"
-
 #include <algorithm>
+
 #include "common.h"
+#include "diffclock.h"
 
 #include "test_cache_miss.hpp"
 #include "test_pointer_alias/test_pointer_alias.h"
@@ -19,6 +19,54 @@
 #include "test_image.h"
 #include "test_factoriel.hpp"
 
+benchpress::registration* benchpress::registration::d_this;
+
+using namespace std;
+int main(int argc, const char * argv[]) {
+    std::cout << "Starting tests ...\n" << std::endl;
+    
+    
+    auto t0 = getTime();
+    
+    ILP::test();
+    std::cout << "\n **** \n\n";
+
+    Factoriel::test();
+    std::cout << "\n **** \n\n";
+    
+    PointerAlias::test();
+    std::cout << "\n **** \n\n";
+    
+    Virtual::test();
+    std::cout << "\n **** \n\n";
+    
+    FloatDouble::test();
+    std::cout << "\n **** \n\n";
+    
+    Inline::test();
+    std::cout << "\n **** \n\n";
+
+    Image::test();
+    std::cout << "\n **** \n\n";
+    
+    DataOrientedDesign::test();
+    std::cout << "\n **** \n\n";
+
+    SoA::test();
+    std::cout << "\n **** \n\n";
+    
+    CacheMiss::test();
+    std::cout << "\n **** \n\n";
+    
+    Threads::test();
+    std::cout << "\n **** \n\n";
+
+    auto t1 = getTime();
+    
+    std::cout << "Tests completed, time " << diffclock(t1, t0) << "s" << std::endl;
+    
+    return 0;
+}
 
 //shared memory & shared nothing
 //concurrency & parallelism
@@ -32,68 +80,4 @@
 //conditional variables / monitors
 //spin lock, read-write lock, mutex, concurrent collections
 //roofline model
-using namespace std;
-int main(int argc, const char * argv[]) {
-    //main2();
-    
-    std::cout << "Starting tests ...\n" << std::endl;
-
-    auto t0 = getTime();
-
-    Factoriel::test();
-    PointerAlias::test();
-    Image::test();
-    Threads::test();
-    ILP::test();
-    Virtual::test();
-    FloatDouble::test();
-    DataOrientedDesign::test();
-    SoA::test();
-    Inline::test();
-    CacheMiss::test();
-    
-    auto t1 = getTime();
-    
-    std::cout << "Tests completed, time " << diffclock(t1, t0) << std::endl;
-    
-    return 0;
-}
-
-
-/*
- #include "simd/simd.h"
- void testSSE() {
- using namespace embree;
- size_t testSize = 1 << 15;
- 
- std::unique_ptr<float[]> floats(new float[testSize]);
- 
- std::generate(floats.get(),
- floats.get() + testSize,
- []{ return randomFloat();});
- 
- auto sseSize = testSize/ssef::size;
- std::unique_ptr<ssef[]> sseFloats(new ssef[sseSize]);
- 
- int floatIter = 0;
- for (int i = 0; i < sseSize; ++i) {
- sseFloats[i].load(floats.get() + floatIter);
- floatIter += 4;
- }
- 
- auto time0 = getTime();
- std::for_each(floats.get(),
- floats.get() + testSize,
- [](float x) { return sqrtf(x); });
- auto time1 = getTime();
- std::cout << diffclock(time1, time0) << std::endl;
- auto time2 = getTime();
- std::for_each(sseFloats.get(),
- sseFloats.get() + sseSize,
- [](const ssef& f) { return sqrt(f); });
- auto time3 = getTime();
- 
- std::cout << diffclock(time3, time2) << std::endl;
- 
- }*/
 

@@ -11,7 +11,7 @@
 
 namespace PointerAlias {    
     void pointerAliasSameType(float* a, float* b, float* res, size_t size) {
-        DISABLE_SIMD_UNROLL
+        DISABLE_SIMD
         for (size_t i = 1; i < size - 1; ++i) {
             a[i] += res[i];
             b[i] += res[i];
@@ -25,7 +25,7 @@ namespace PointerAlias {
     }
     
     void pointerAliasSameTypeRestrict( float* RESTRICT a,  float*  RESTRICT b,  float* RESTRICT res, size_t size) {
-        DISABLE_SIMD_UNROLL
+        DISABLE_SIMD
         for (size_t i = 1; i < size - 1; ++i) {
             a[i] += res[i];
             b[i] += res[i];
@@ -39,7 +39,7 @@ namespace PointerAlias {
     }
     
     void pointerAliasDifferentType(float* a, A* b, B* res, size_t size) {
-        DISABLE_SIMD_UNROLL
+        DISABLE_SIMD
         for (size_t i = 1; i < size - 1; ++i) {
             a[i] += ((float*) res)[i];
             ((float*)b)[i] += ((float*) res)[i];
@@ -59,7 +59,7 @@ namespace PointerAlias {
     void pointerAliasDifferentTypeNoCast(float* a, A* b, B* res, size_t size) {
         float* bFloat = (float*)b;
         float* resFloat = (float*)res;
-        DISABLE_SIMD_UNROLL
+        DISABLE_SIMD
         for (size_t i = 1; i < size - 1; ++i) {
             a[i] += resFloat[i];
             bFloat[i] += resFloat[i];

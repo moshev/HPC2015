@@ -12,7 +12,7 @@ namespace Factoriel {
     
     inline int factoriel1(int n) {
         int r = 1;
-        DISABLE_SIMD_UNROLL
+        //DISABLE_SIMD_UNROLL
         for(int k=n; k>0; --k)
             r *= k;
         
@@ -22,7 +22,7 @@ namespace Factoriel {
     
     inline int factoriel2(int n) {
         int r = 1;
-        DISABLE_SIMD_UNROLL
+        //DISABLE_SIMD_UNROLL
         for(int k=1; k<=n; ++k)
             r *= k;
         
@@ -30,38 +30,36 @@ namespace Factoriel {
     }
     
     constexpr int getTestSize() {
-        return 100000000;
+        return 100000;
     }
     
     void test() {
         printf("Testing factoriel ...\n");
-        auto s1 = getTime();
-        DISABLE_SIMD_UNROLL
-        for(int k=0; k<100; k++) {
-            volatile int r1 = factoriel1(getTestSize());
-        }
-        auto e1 = getTime();
         
-        auto s2 = getTime();
-        DISABLE_SIMD_UNROLL
-        for(int k=0; k<100; k++) {
-            volatile int r2 = factoriel2(getTestSize());
-        }
+        auto test1 = [&] {
+            DISABLE_SIMD_UNROLL
+            for(int k=0; k<100; k++) {
+                volatile int r1 = factoriel1(getTestSize());
+            }
+        };
         
-        auto e2 = getTime();
+        auto test2 = [&] {
+            DISABLE_SIMD_UNROLL
+            for(int k=0; k<100; k++) {
+                volatile int r2 = factoriel2(getTestSize());
+            }
+        };
         
-        
-        auto s3 = getTime();
-        DISABLE_SIMD_UNROLL
-        for(int k=0; k<100; k++) {
-            volatile int r3 = factoriel0(getTestSize());
-        }
-        
-        auto e3 = getTime();
-        
-        
-        std::cout << "\tfactoriel 1: " << diffclock(e1, s1) << std::endl << "\tfactoriel 2: " << diffclock(e2, s2) << std::endl << "\trecursive: "<< diffclock(e3, s3);
-        std::cout << "\n **** \n\n";
+        auto test0 = [&] {
+            DISABLE_SIMD_UNROLL
+            for(int k=0; k<100; k++) {
+                volatile int r3 = factoriel0(getTestSize());
+            }
+        };
+        ADD_BENCHMARK("Factoriel \t Recursion", test0);
+        ADD_BENCHMARK("Factoriel \t Backward", test1);
+        ADD_BENCHMARK("Factoriel \t Forward", test2);
+        benchpress::run_benchmarks(benchpress::options());
     }
 
 }

@@ -58,40 +58,45 @@ struct MobFlags {
     }
     
     size_t constexpr getTestSize() {
-        return 50000000;
+        return 1_million;
     }
     
     void testMobBool() {
         const auto TEST_SIZE = getTestSize();
         std::unique_ptr<MobBool[]> mob(new MobBool[TEST_SIZE]);
         bool areSuperMobs = true;
-        for (auto i = 0; i < TEST_SIZE; ++i){
-            areSuperMobs &= isSuperMob(mob[i]);
-        }
+        
+        auto test0 = [&] {
+            for (auto i = 0; i < TEST_SIZE; ++i){
+                areSuperMobs &= isSuperMob(mob[i]);
+            }
+        };
+        
+        ADD_BENCHMARK("DataOrientedDesign \t MobFlag", test0);
+        benchpress::run_benchmarks(benchpress::options());
     }
     
     void testMobFlags() {
         const auto TEST_SIZE = getTestSize();
         std::unique_ptr<MobFlags[]> mob(new MobFlags[TEST_SIZE]);
         bool areSuperMobs = true;
-        for (auto i = 0; i < TEST_SIZE; ++i){
-            areSuperMobs &= isSuperMob(mob[i]);
-        }
+        
+        auto test0 = [&] {
+            for (auto i = 0; i < TEST_SIZE; ++i){
+                areSuperMobs &= isSuperMob(mob[i]);
+            }
+        };
+        
+        ADD_BENCHMARK("DataOrientedDesign \t MobBool", test0);
+        benchpress::run_benchmarks(benchpress::options());
     }
     
     void test() {
         std::cout << "Testing data oriented design ..." << std::endl;
-        auto t2 = getTime();
+
         testMobBool();
-        auto t3 = getTime();
-        
-        std::cout << '\t' << "Mob bool " << diffclock(t3, t2) << std::endl;
-        auto t0 = getTime();
         testMobFlags();
-        auto t1 = getTime();
-        std::cout << '\t' << "Mob flags " << diffclock(t1, t0) << std::endl;
-        
-        std::cout << "\n **** \n\n";
+
     }
     
 }//namespace DataOrientedDesign

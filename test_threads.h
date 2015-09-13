@@ -79,7 +79,7 @@ namespace Threads {
     }
     
     int getTestSize() {
-        return 500000000;
+        return 100_million;
     }
     
     void testFalseSharing() {
@@ -130,7 +130,5 @@ namespace Threads {
     void test() {
         std::cout << "Testing thread ..." << std::endl;
         testFalseSharing();
-        //testHelloWorld();
-        std::cout << "\n **** \n\n";
     }
 }
