@@ -48,8 +48,8 @@ function log(str) {
     console.log(msg);
 }
 
-//creates file named "sandbox" in the current directory, which has the configuration for running ./sandbox-exec.
-//This allows process started with "./sandbox-exec -f sandbox /path/to/process/process.bin" to mess up
+//creates file named "sandbox" in the user(student) directory, which has the configuration for running ./sandbox-exec.
+//This allows process started with "./sandbox-exec -f ./userdir/sandbox /path/to/process/process.bin" to mess up
 //only with files in "path/to/process/" (aka it is sandboxing it)
 function createSandboxFile(userFolder) {
     var sandboxFile = userFolder + "/sandbox";
