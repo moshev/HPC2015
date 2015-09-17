@@ -149,6 +149,12 @@ function getUserHomeworkFolder(id, homeworkNumber) {
     return HOMEWORK_FOLDER + "/" + id + "/" + homeworkNumber.toString();
 }
 
+//does the main work
+//accepts userid:String, homeworkNumber:Integer, Tests:[{input:"string", output:"string", time:Number},...] and source:String.
+//returns {res: RES_X, txt:"string"} RES_X is any of the RES_ numbers defined above
+//txt is string explaining why this result happened
+//if res==RES_OKAY, "txt" will have the number of tests that passed successfuly.
+//ideally should be split in more functions
 function homework(userid, homeworkNumber, tests, source) {
     
     //there is folder that contains the homeworks of all students named HOMEWORK_FOLDER
@@ -169,6 +175,9 @@ function homework(userid, homeworkNumber, tests, source) {
     
     //this should be number now
     id = parseFloat(userid);
+    
+    //*************************************************************************
+    //* First make sure all the folder/files we will need are available
     
     //make a folder for each student
     //inside that student folder, make a folder for each homework
@@ -199,7 +208,10 @@ function homework(userid, homeworkNumber, tests, source) {
     var outFile = homeworkFolder + "/" + HOMEWORK_EXECUTABLE_NAME + ".bin";
     //clear any previous files just in case
     removeFile(outFile);
-
+    
+    //*************************************************************************
+    //Call clang to compile the source to binary
+    
     //limit the executable file resources (time & memory)
     var processOptions  = { encoding: 'utf8',
             timeout: 10,
@@ -222,7 +234,10 @@ function homework(userid, homeworkNumber, tests, source) {
         result = RES_COMPILE_ERROR;
         return {"result" : result, "txt" : compileResult.stderr.toString()}
     }
-
+    
+    //*************************************************************************
+    //Call the compiled binary once for each of the tests
+    
     var numTestsPassed = 0;
     log("homeworkFolder " + homeworkFolder);
     //loop through the test cases and compare the results
@@ -236,9 +251,9 @@ function homework(userid, homeworkNumber, tests, source) {
              //execute the compiled binary
             var execCommand = "";
             if (USE_SANDBOXING) {
-                 execCommand = "sudo sandbox-exec -f " + userFolder + "/sandbox " + outFile + " " + tests[i].input;
+                 execCommand = "sudo sandbox-exec -f " + userFolder + "/sandbox " + outFile + " " + input;
             } else {
-                 execCommand = "./" + outFile + " " + tests[i].input;
+                 execCommand = "./" + outFile + " " + input;
             }
             
              log("Executing '" + execCommand + "'");
@@ -278,6 +293,9 @@ function homework(userid, homeworkNumber, tests, source) {
         }
         
     }
+    
+    //*************************************************************************
+    //Hopefully nobody hacked us and we can return the result
     
     return {"result" : result, "txt" : numTestsPassed.toString()};
 }
