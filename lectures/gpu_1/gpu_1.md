@@ -11,35 +11,35 @@
 
 ---
 
-![](./images/0.png)
+![](./images/0.PNG)
 
 ---
 
-![](./images/1.png)
+![](./images/1.PNG)
 
 ---
 
-![](./images/2.png)
+![](./images/2.PNG)
 
 ---
 
-![](./images/3.png)
+![](./images/3.PNG)
 
 ---
 
-![](./images/4.png)
+![](./images/4.PNG)
 
 ---
 
-![](./images/5.png)
+![](./images/5.PNG)
 
 ---
 
-![](./images/6.png)
+![](./images/6.PNG)
 
 ---
 
-![](./images/7.png)
+![](./images/7.PNG)
 
 ---
 
@@ -64,7 +64,7 @@ else a[id] = 0;
 
 ---
 
-![](./images/8.png)
+![](./images/8.PNG)
 
 ---
 
@@ -158,11 +158,11 @@ __shared__ int something[42];
 
 ---
 
-![](./images/9.png)
+![](./images/9.PNG)
 
 ---
 
-![](./images/10.png)
+![](./images/10.PNG)
 
 ---
 
@@ -182,7 +182,7 @@ __shared__ int something[42];
 
 ---
 
-![](./images/11.png)
+![](./images/11.PNG)
 
 ---
 
@@ -208,15 +208,15 @@ __shared__ int something[42];
 
 4 x 32
 
-![](./images/12.png)
+![](./images/12.PNG)
 
 ---
 
-![](./images/13.png)
+![](./images/13.PNG)
 
 ---
 
-![](./images/14.png)
+![](./images/14.PNG)
 
 ---
 
@@ -248,7 +248,7 @@ __shared__ int something[42];
 
 ### GCN 
 
-![](./images/15.png)
+![](./images/15.PNG)
 
 ---
 
@@ -265,19 +265,19 @@ __shared__ int something[42];
 
 ---
 
-![](./images/16.png)
+![](./images/16.PNG)
 
 ---
 
-![](./images/17.png)
+![](./images/17.PNG)
 
 ---
 
-![](./images/18.png)
+![](./images/18.PNG)
 
 ---
 
-![](./images/19.png)
+![](./images/19.PNG)
 
 bandwidth x4
 
@@ -289,11 +289,11 @@ capacity *y
 
 ---
 
-![](./images/20.png)
+![](./images/20.PNG)
 
 ---
 
-![](./images/21.png)
+![](./images/21.PNG)
 
 ---
 
@@ -301,7 +301,7 @@ capacity *y
 
 ---
 
-![](./images/22.png)
+![](./images/22.PNG)
 
 ---
 
@@ -320,19 +320,19 @@ capacity *y
 ---
 
 ## Power VR
-![](./images/23.png)
+![](./images/23.PNG)
 
 ---
 
-![](./images/24.png)
+![](./images/24.PNG)
 
 ---
 
-![](./images/25.png)
+![](./images/25.PNG)
 
 ---
 
-![](./images/26.png)
+![](./images/26.PNG)
 
 ---
 
