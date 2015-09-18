@@ -1,16 +1,11 @@
 #GPGPU Intro
 
 ![](../misc_images/derivative.png)
+>Doing parallel programming is really easy, as long as you don't need it to run fast
 
 ---
 
-1. **Intro**
- * Domain, APIs, Thread and Memory models
-2. OpenCL
-3. CUDA
-4. Shared memory
-5. Performance considerations
-6. Parallel design patterns
+#1. WHY GPGPU
 
 ---
 
@@ -45,93 +40,54 @@ What is GPGPU ?
 
 ---
 
+* Moores law
+* Wall
+ * ILP
+ * Memory
+ * Power
+
+---
+
+Single core gets up to 15% faster per year
+
+Multi core gets up to 75% faster per year
+
+FMAD double = 50pj
+
+Moving 64b 1mm = 25pj
+
+--
+
+i7 = 2000pj per instruction
+
+Fermi = 200pj per instruction
+
+---
+
 ![cpu vs gpu](./images/cpu-vs-gpu.png)
 
 ---
 
-GPU
-* The GPU is huge SIMD machine designed for embarrassingly parallel tasks (like CG)
-
-Programming Model:
-* Each SIMD lane is a different thread (some call it SIMT)
-* Write the program as only one SIMD lane will execute it
-* Run it on thousands of lanes, each lane operating on different data
-* Synchronization on global level is **not possible** (but there are atomics)
- * This is fundamental
- * So you don't have to worry about synchronization
- * But problems that require synchronization are harder (some impossible) to do
+![construct](./images/construct.jpg)
 
 ---
 
-## APIs
-
-Each API has two parts - C/C++ API to send tasks & data to the device (1) and C-based language, used to write programs for the device (2)
-
-1. OpenCL (Khronos)
-2. Metal (Apple)
-3. Direct Compute (Microsoft)
-4. CUDA (nVidia)
-5. RenderScript (Google)
+#Why the GPU runs so fast ?
 
 ---
 
-C++
-```
-void sum(float* a, float* b, float* res, int count) { 
-    for (auto i = 0; i < count; ++i)
-        res[i] = a[i] + b[i]
-}
-```
-```
-sum(a, b, res);
-```
+* Latency
+ * How fast a car can go on this road?
 
-GPGPU
-```
-kernel void sum(float* a, float* b, float* res, int count) {
-    int id = get_global_id(0);
-    if (id > count) return;
-    res[id] = a[id] + b[id];
-}
-```
-```
-device.transfer(a);
-device.transfer(b);
-device.transfer(res);
-device.execture("sum");
-device.getResult(res);
-```
+* Bandwitdh
+ * How many cars can go on this road at the same time ?
 
----
+* Throughput 
+ * How many cars can go on this road for an hour ?
 
-OpenCL 1.X
-* Use all computational resources in the system — CPUs, GPUs and others
-* Based on C99
- * Data- and task- parallel computational model
- * Abstract the specifics of underlying hardware
+The GPUs are designed for throughput. What does this means and why this is the case ?
 
-OpenCL 2.0 & OpenCL 2.1
-
----
-
-A modern platform includes:
-* One or more CPUs
-* One or more GPUs
-* Optional accelerators (for example Xeon Phi)
-
-Write once, run everywhere concept
-
----
-
-![](./images/2.png)
-
----
-
-![](./images/0.png)
-
----
-
-![](./images/1.png)
+What is the CPU designed for ?
 
 ---
 
@@ -139,11 +95,74 @@ Write once, run everywhere concept
 
 ## Efficiency = Locality
 
-The GPGPU APIs are designed refleting that fact
+GPGPU is taking that into account
 
 ---
 
-## Thread Model
+* The GPU is huge SIMD machine designed for embarrassingly parallel tasks (like CG)
+
+Programming Model:
+* Cache **hierarchy** (memory type is explicitly declared in code)
+* Each SIMD lane is a different thread (some call it SIMT)
+* Write the program as only one SIMD lane will execute it
+* Run it on **thousands** of lanes(threads), each lane(thread) operating on different data
+* Fundamental: synchronization on global level is **not possible** (but there are atomics)
+ * So you **don't have to worry about synchronization**
+ * But problems that require synchronization are harder (some impossible) to do
+
+---
+
+#2. APIs for GPGPU
+
+---
+
+Each API has two parts - C/C++ API to send tasks & data to the device (1) and C-based language, used to write programs for the device (2)
+
+1. OpenCL (Khronos) - **everywhere\***
+2. Metal (Apple) - OS X & iOS
+3. Direct Compute (Microsoft) - Windows
+4. CUDA (nVidia) - nVidia
+5. RenderScript (Google) - Android
+
+In contrast, APIs for graphics* are OpenGL, DirectX, Metal, Vulcan
+
+---
+
+GPGPU API goals
+* Use (all computational) resources in the system — CPUs, GPUs and others
+* Based on C99
+* Data- and task- parallel computational model
+* Abstract the specifics of underlying hardware
+
+---
+
+<img style="float: right;" src="./images/2.PNG" width="380px">
+
+GPGPU APIs view of the system
+
+-
+
+Host (CPU) can send data to multiple devices (CPUs, GPUs, Accelerators)
+
+-
+
+Each device has piece of code compiled for each architecture, 
+which the host can invoke.
+
+---
+
+## GPU Architectures:
+1. Intel (desktop & mobile)
+2. nVidia (desktop & mobile)
+3. AMD (desktop & mobile)
+4. ARM (mobile)
+5. Imagination (mobile)
+6. Qualcomm (mobile)
+7. & Others
+
+---
+
+## Device Thread Model
 
 * Have a parallel problem.
 * Write a program as it will be executed on **one thread**.
@@ -152,7 +171,7 @@ The GPGPU APIs are designed refleting that fact
 
 ---
 
-## Thread Model
+## Device Thread Model
 
 * Threads are grouped into blocks (different are calling that differently).
  * In fact, this is due to the fact, that each "thread" is a SIMD lane. The size of the block thus is the size of the GPU SIMD unit. 4 to 32 in the hardware today.
@@ -165,14 +184,30 @@ The GPGPU APIs are designed refleting that fact
 
 ---
 
-## Thread Model
+## Device Thread Model
 * The SIMD unit has a fixed number of lanes. How many threads can we launch ?
  * Obviously **n * sizeof(SIMD width)**
   * What if we don't have such exact number of tasks to give ?
 * How many threads to give to the GPU ?
+* Designed to scale with hardware
 
 ---
 
+#Hiding latency with multithreading
+
+---
+
+So far ...
+
+ILP, cache, hyper threading, branch predictor, out of order execution, register renaming
+
+---
+
+![](./images/cpu_floorplan.jpg)
+
+The GPU has totaly different approach !
+
+---
 
 ![](./images/g0.PNG)
 
@@ -210,8 +245,8 @@ The GPGPU APIs are designed refleting that fact
 ##solutions
 * Prepare fewer threads (reduce occupancy or threads in flight)
 * Register spill
-* __noinline__
-* Code trimming
+* Function call
+* Code generation
 
 ---
 
@@ -219,10 +254,13 @@ The GPGPU APIs are designed refleting that fact
 
 ```__global__
 void squareEvenOdd(int* a, int count) {
-int id = globalThreadIdx();
-if (id >= count) return;
-if (id % 2) a[id] = a[id] * a[id];
-else a[id] = 0;
+    int id = globalThreadIdx();
+    if (id >= count)
+        return;
+    if (id % 2)
+        a[id] = a[id] * a[id];
+    else 
+        a[id] = 0;
 }
 ```
 
@@ -232,18 +270,71 @@ else a[id] = 0;
 
 ---
 
+##solutions
+* Ignore
+* Multi kernel
+
+---
+
+![](../gpu_1/images/12.PNG)
+
+---
+
 ## IT IS LIKE HYPERTHREADING ON STEROIDS
 
 #### optimized for throughput, not latency
 
 ---
 
+How does this looks in code ?
+
+C++
+```
+void sum(float* a, float* b, float* res, int count) { 
+    for (auto i = 0; i < count; ++i)
+        res[i] = a[i] + b[i]
+}
+```
+```
+sum(a, b, res);
+```
+
+GPGPU
+```
+kernel void sum(float* a, float* b, float* res, int count) {
+    int id = get_global_id(0);
+    if (id > count) return;
+    res[id] = a[id] + b[id];
+}
+```
+```
+device.transfer(a);
+device.transfer(b);
+device.transfer(res);
+device.execture("sum");
+device.getResult(res);
+```
+
+---
+
+# Memory model
+
+---
+
 Memory types
-* Registers X1
-* Shared X5
-* Global X100
-* Constant - broadcast
-* Caches (L1, L2, NC, other)
+
+* Device memory
+ * Registers X1
+ * Shared X5
+ * Global X100
+ * Constant - broadcast
+ * Caches (L1, L2, NC, other)
+
+* Host memory
+
+---
+
+![](./images/3.PNG)
 
 ---
 
