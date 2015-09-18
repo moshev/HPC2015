@@ -1,5 +1,8 @@
 #GPGPU Architectures
 
+>"I saw `cout` being shifted `Hello world` times to the left and stopped right there."
+— Steve Gonedes
+
 ---
 
 ## *disclaimer

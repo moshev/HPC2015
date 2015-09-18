@@ -14,6 +14,12 @@ var mkdirp = require('mkdirp');
 //to check the OS (we enable sandboxing if this is OS X 10.9 or newer)
 var os = require('os');
 
+//****************************************************************************************************************
+
+//this will be used to invoke a compiler
+//if you don't have clang++, you wil have to modify that
+var COMPILER_START_COMMAND = 'clang++ -Xclang -std=c++11 -stdlib=libc++ -lpthread';
+
 var USE_SANDBOXING = (os.platform()=="darwin") && parseFloat(os.release()) >= 15;
 
 if (USE_SANDBOXING) {
@@ -223,7 +229,7 @@ function homework(userid, homeworkNumber, tests, source) {
     
     //call clang to compile the source
     try {
-        var compileResult = execSync('clang++ -Xclang -std=c++11 -stdlib=libc++ -lpthread  ' + homeworkFile + " -o " + outFile, MAX_RUNTIME_MS);
+        var compileResult = execSync(COMPILER_START_COMMAND + ' ' + homeworkFile + " -o " + outFile, MAX_RUNTIME_MS);
     } catch (e) {
         result = RES_COMPILE_ERROR;
         return {"result" : result, "txt" : e.toString()};
@@ -262,7 +268,10 @@ function homework(userid, homeworkNumber, tests, source) {
              var chModResult = execSync(execCommand, MAX_RUNTIME_MS);
         } catch (e) {
             log("chroot err " + e.toString());
-            execSync("sudo pkill -9 " + HOMEWORK_EXECUTABLE_NAME + ".bin")
+            if (USE_SANDBOXING) {
+                execSync("sudo pkill -9 " + HOMEWORK_EXECUTABLE_NAME + ".bin")
+            }
+            
             return {"result":RES_TIMEOUT_ERROR, "txt":"Time out error"};
         }
         
@@ -305,8 +314,8 @@ function sampleUsage() {
                      {input:"1 0 0", output:"1 2 1 ", time:"1000"},
                      {input:"0 0 3", output:"3 1 1 ", time:"2000"}];
     
-    for (var i = 0; i < 1; ++i) {
-        for (var j = 0; j < 1; ++j) {
+    for (var i = 0; i < 11; ++i) {
+        for (var j = 0; j < 5; ++j) {
             var studentId = 44286+i;
             var homeworkNumber = j;
             var source = '#include <vector>\n#include <unistd.h>\n#include <stdio.h>\n#include <iostream>\n int main(int argc, const char* argv[]){std::vector<int> v;printf("1 1 1");}';
