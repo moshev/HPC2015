@@ -286,7 +286,7 @@ void squareEvenOdd(int* a, int count) {
 
 ---
 
-How does this looks in code ?
+Okay, but how does this looks in code ?
 
 C++
 ```
@@ -317,11 +317,34 @@ device.getResult(res);
 
 ---
 
+Difference between the CPU and the GPU thread models 
+
+| CPU        | GPU           |
+| ------------- |:-------------:| 
+| Threads are expensive, no sense to have more threads than cores | Threads are cheap, make millions | 
+| Context switch is expensive     | Cheap and happens every cycles      | 
+| Branch can be expensive, but most of the time is cheap | Most often, branches are really expensive  | 
+| Writing a lot code does not hurt the perfromance | Writing a lot code **might** hurt the perfromance |
+
+---
+
+**Millions** of threads are send to the driver 
+
+**Tens of thousands** of threads are prepared on the GPU for execution
+
+**Thousands** of threads are running at the same time
+
+---
+
 # Memory model
 
 ---
 
-Memory types
+Device and host are having physically different memories
+
+You have to copy that back on forth (memcpy-like)*
+
+---
 
 * Device memory
  * Registers X1
@@ -378,7 +401,7 @@ __constant__ int c[42];
 * CUDA
 * OpenCL 1.X
 * OpenCL 2.X
-* Same view of own view here ?
+* Shared view or own view here ?
 
 ---
 
@@ -393,4 +416,14 @@ __shared__ int something[42];
 * Most of the GPGPU apps are optimizing by finding a way to exploit the shared memory.
 * The idea is to cache manually what is needed in the shared memory and use the shared memory instead of the global memory.
 
+---
 
+![](./images/5.PNG)
+
+---
+
+![](./images/4.PNG)
+
+---
+
+# Q&A
