@@ -426,4 +426,34 @@ __shared__ int something[42];
 
 ---
 
+You can't **new** and **malloc** in device code.
+
+Why ?
+
+
+What about virtual functions ?imag
+
+---
+
+Okay, but how does this looks in code 
+
+```
+float data[DATA_SIZE];
+for(int i = 0; i < DATA_SIZE; i++)
+    data[i] = rand() / (float)RAND_MAX;
+//
+cl_mem input = clCreateBuffer(context,  CL_MEM_READ_ONLY,  
+                sizeof(float) * DATA_SIZE, NULL, &err);
+clEnqueueWriteBuffer(commands, input, CL_TRUE, 0, 
+                sizeof(float) * DATA_SIZE, data, 0, NULL, NULL);  
+//
+clEnqueueReadBuffer(commands, output, CL_TRUE, 0, 
+                sizeof(float) * DATA_SIZE, data, 0, NULL, NULL);
+
+```
+
+More code in the next lecture.
+
+---
+
 # Q&A
