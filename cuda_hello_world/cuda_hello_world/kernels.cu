@@ -37,6 +37,31 @@ kernel void raceCondition(int* a) {
 
 //************************************************
 
+struct A {
+private:
+    enum class Options {None, One, All};
+
+    int a;
+public:
+    device A() {
+        auto& b = a;
+        if (&b != nullptr)
+            b = [&]{ return 4; }();
+        
+        int arr[3] {0, 0, 0};
+        for (auto& e: arr) {
+            printf("%i\n", e);
+        }
+        
+        static_assert(196 > 42, "This better compiles");
+    }
+    device ~A(){}
+    device A(const A&&){}
+    device virtual void foo() final { }
+};
+
+//************************************************
+
 kernel void sum0(int* a, int* countPtr, int* result) {
     const int i = getGlobalID();
     

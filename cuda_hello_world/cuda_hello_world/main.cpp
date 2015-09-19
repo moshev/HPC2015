@@ -184,7 +184,7 @@ int main(int argc, const char * argv[]) {
     nvrtcProgram program;
     nvRes = nvrtcCreateProgram(&program, source.c_str(), "compiled_kernel", 0, NULL, NULL);
     
-    const char* options[3] = {"--gpu-architecture=compute_20","--maxrregcount=64","--use_fast_math"};
+    const char* options[] = {"--gpu-architecture=compute_20","--maxrregcount=64","--use_fast_math", "--std=c++11"};
     nvRes = nvrtcCompileProgram(program, COUNT_OF(options), options);
     
     if (nvRes != NVRTC_SUCCESS) {
