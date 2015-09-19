@@ -130,7 +130,6 @@ struct DeviceBuffer {
     DeviceBuffer(int64_t numBytes, void* srcPtr) {
         CUresult res = cuMemAlloc(&ptr, numBytes);
         CHECK_ERROR(res);
-        res = cuMemcpyHtoD(ptr, srcPtr, sizeof(int));
         res = cuMemcpyHtoD(ptr, srcPtr, numBytes);
         CHECK_ERROR(res);
     }
