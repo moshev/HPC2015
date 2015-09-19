@@ -98,7 +98,7 @@ inline
 void __checkError(T error, const char* file, int line) {
     if (error != 0) {
         printLog(LogTypeError, "error %i in file %s, line %i", error, file, line);
-        exit(error);
+        exit(EXIT_FAILURE);
     }
 }
 } //CUDAErrorCheck
@@ -156,14 +156,14 @@ int main(int argc, const char * argv[]) {
         contexts.push_back(pctx);
     }
     
-    std::string source = getProgramSource("/Developer/git/cuda_hello_world/cuda_hello_world/kernels.cu");
+    std::string source = getProgramSource("/Developer/git/GPAPI/GPAPI/HPC2015/cuda_hello_world/cuda_hello_world/kernels.cu");
     
     nvrtcResult nvRes;
     nvrtcProgram program;
     nvRes = nvrtcCreateProgram(&program, source.c_str(), "compiled_kernel", 0, NULL, NULL);
     
     const char* options[3] = {"--gpu-architecture=compute_20","--maxrregcount=64","--use_fast_math"};
-    nvRes = nvrtcCompileProgram(program, 3, options);
+    nvRes = nvrtcCompileProgram(program, COUNT_OF(options), options);
     
     if (nvRes != NVRTC_SUCCESS) {
         size_t programLogSize;
@@ -177,7 +177,7 @@ int main(int argc, const char * argv[]) {
         
         delete[] log;
         
-        return -1;
+        return EXIT_FAILURE;
     }
 
     size_t ptxSize;
@@ -257,9 +257,11 @@ int main(int argc, const char * argv[]) {
                             "positionThreadIdx",
                             "positionGlobalIdx"};
     for (int i = 0; i < COUNT_OF(kernels); ++i) {
-        err = cuModuleGetFunction(&kernel, programs[0], kernels[i]);
+        const char* kernelName = kernels[i];
+        err = cuModuleGetFunction(&kernel, programs[0], kernelName);
         CHECK_ERROR(err);
         
+        printLog(LogTypeInfo, "Launching kernel %s\n", kernelName);
         err = cuLaunchKernel(kernel, globalSize, 1UL, 1UL, // grid size
                              localSize, 1UL, 1UL, // block size
                              0, // shared size
@@ -281,5 +283,5 @@ int main(int argc, const char * argv[]) {
     
     popContext(contexts[0]);
     
-    return 0;
+    return EXIT_SUCCESS;
 }
