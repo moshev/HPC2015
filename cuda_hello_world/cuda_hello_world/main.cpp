@@ -121,6 +121,27 @@ inline void popContext(CUcontext context) {
     CHECK_ERROR(err);
 }
 
+struct DeviceBuffer {
+    CUdeviceptr ptr;
+    DeviceBuffer(int64_t numBytes) {
+        CUresult res = cuMemAlloc(&ptr, numBytes);
+        CHECK_ERROR(res);
+    }
+    DeviceBuffer(int64_t numBytes, void* srcPtr) {
+        CUresult res = cuMemAlloc(&ptr, numBytes);
+        CHECK_ERROR(res);
+        res = cuMemcpyHtoD(ptr, srcPtr, sizeof(int));
+        CHECK_ERROR(res);
+    }
+    ~DeviceBuffer() {
+        CUresult res = cuMemFree(ptr);
+        CHECK_ERROR(res);
+    }
+    operator CUdeviceptr() {
+        return ptr;
+    }
+};
+
 int main(int argc, const char * argv[]) {
     CUresult err = CUDA_SUCCESS;
     err = cuInit(0);
@@ -238,25 +259,32 @@ int main(int argc, const char * argv[]) {
     nvRes = nvrtcDestroyProgram(&program);
     CHECK_ERROR(nvRes);
     delete[] ptx;
-    //
     
+    //*******************************************************
+    const int SIZE = 1024 * 2;
+
     pushContext(contexts[0]);
-    CUdeviceptr devicePtr;
-    const int SIZE = 1024;
-    int hostPtr[1024];
+    DeviceBuffer devicePtr(SIZE * sizeof(int));
+
+    const unsigned int localSize = 32;
     
-    err = cuMemAlloc(&devicePtr, sizeof(int) * SIZE);
-    CHECK_ERROR(err);
-    unsigned int globalSize = 32;
-    unsigned int localSize = 32;
+    static_assert((SIZE % localSize) == 0, "number of threads should be multiple of localSize");
+    unsigned int globalSize = SIZE / localSize;
+
+    
     CUfunction kernel;
-    void *paramsPtrs[1] = {&devicePtr};
     
     const char* kernels[] = {"position196",
                             "positionBlockIdx",
                             "positionThreadIdx",
                             "positionGlobalIdx"};
+    
+    //*******************************************************
+    //Hello World kernels (+ globalIdx, localIdx, blockIdx, etc)
+    
     for (int i = 0; i < COUNT_OF(kernels); ++i) {
+        void *paramsPtrs[1] = {&devicePtr};
+
         const char* kernelName = kernels[i];
         err = cuModuleGetFunction(&kernel, programs[0], kernelName);
         CHECK_ERROR(err);
@@ -271,16 +299,143 @@ int main(int argc, const char * argv[]) {
                              );
         CHECK_ERROR(err);
         
-        err = cuMemcpyDtoH(hostPtr, devicePtr, sizeof(int) * SIZE);
+        
+        std::unique_ptr<int[]> result(new int[SIZE]);
+
+        err = cuMemcpyDtoH(result.get(), devicePtr, sizeof(int) * SIZE);
         CHECK_ERROR(err);
         for (int i = 0; i < SIZE; ++i) {
-            printf("%i, ", hostPtr[i]);
+            printf("%i, ", result[i]);
         }
         
-        printf("\n\n\n");
+        printf("\n\n\n\n");
 
     }
-    
+
+    //*******************************************************
+    //naive sum implementaion
+    {
+        int sumResult = 0;
+        DeviceBuffer resultPtr(sizeof(int), (void*)&sumResult);
+        DeviceBuffer countPtr(sizeof(int), (void*)&SIZE);
+        
+        const char* kernelName = "sum0";
+        err = cuModuleGetFunction(&kernel, programs[0], kernelName);
+        CHECK_ERROR(err);
+        
+        void *paramsPtrs[3] = {&devicePtr, &countPtr, &resultPtr};
+
+        
+        printLog(LogTypeInfo, "Launching kernel %s\n", kernelName);
+        err = cuLaunchKernel(kernel, globalSize, 1UL, 1UL, // grid size
+                             localSize, 1UL, 1UL, // block size
+                             0, // shared size
+                             NULL, // stream
+                             &paramsPtrs[0],
+                             NULL
+                             );
+        
+        err = cuMemcpyDtoH(&sumResult, resultPtr, sizeof(int));
+        CHECK_ERROR(err);
+        printf("sum0 result %i\n\n\n\n", sumResult);
+
+    }
+
+    //*******************************************************
+    //better sum implementation
+    {
+        int sumResult = 0;
+        DeviceBuffer resultPtr(sizeof(int), (void*)&sumResult);
+        DeviceBuffer countPtr(sizeof(int), (void*)&SIZE);
+        
+        const char* kernelName = "sum1";
+        err = cuModuleGetFunction(&kernel, programs[0], kernelName);
+        CHECK_ERROR(err);
+        
+        void *paramsPtrs[3] = {&devicePtr, &countPtr, &resultPtr};
+        
+        printLog(LogTypeInfo, "Launching kernel %s\n", kernelName);
+        err = cuLaunchKernel(kernel, globalSize, 1UL, 1UL, // grid size
+                             localSize, 1UL, 1UL, // block size
+                             0, // shared size
+                             NULL, // stream
+                             &paramsPtrs[0],
+                             NULL
+                             );
+        
+        err = cuMemcpyDtoH(&sumResult, resultPtr, sizeof(int));
+        CHECK_ERROR(err);
+        printf("sum1 result %i\n\n\n\n", sumResult);
+        
+    }
+
+    //*******************************************************
+    //naive adj difference
+    {
+        std::unique_ptr<int[]> result(new int[SIZE]);
+        memset(result.get(), 0, SIZE * sizeof(int));
+        
+        DeviceBuffer resultPtr(SIZE * sizeof(int), result.get());
+        
+        const char* kernelName = "adjDiff0";
+        err = cuModuleGetFunction(&kernel, programs[0], kernelName);
+        CHECK_ERROR(err);
+        
+        void *paramsPtrs[2] = {&resultPtr, &devicePtr};
+        
+        
+        printLog(LogTypeInfo, "Launching kernel %s\n", kernelName);
+        err = cuLaunchKernel(kernel, globalSize, 1UL, 1UL, // grid size
+                             localSize, 1UL, 1UL, // block size
+                             0, // shared size
+                             NULL, // stream
+                             &paramsPtrs[0],
+                             NULL
+                             );
+        
+        err = cuMemcpyDtoH(result.get(), resultPtr, SIZE * sizeof(int));
+        CHECK_ERROR(err);
+        
+        for (int i = 0; i < SIZE; ++i)
+            printf("%i, ", result[i]);
+        
+        printf("\n\n\n\n");
+        
+    }
+
+    //*******************************************************
+    //better adj difference
+    {
+        std::unique_ptr<int[]> result(new int[SIZE]);
+        memset(result.get(), 0, SIZE * sizeof(int));
+        
+        DeviceBuffer resultPtr(SIZE * sizeof(int), result.get());
+        
+        const char* kernelName = "adjDiff1";
+        err = cuModuleGetFunction(&kernel, programs[0], kernelName);
+        CHECK_ERROR(err);
+        
+        void *paramsPtrs[2] = {&resultPtr, &devicePtr};
+        
+        
+        printLog(LogTypeInfo, "Launching kernel %s\n", kernelName);
+        err = cuLaunchKernel(kernel, globalSize, 1UL, 1UL, // grid size
+                             localSize, 1UL, 1UL, // block size
+                             0, // shared size
+                             NULL, // stream
+                             &paramsPtrs[0],
+                             NULL
+                             );
+        
+        err = cuMemcpyDtoH(result.get(), resultPtr, SIZE * sizeof(int));
+        CHECK_ERROR(err);
+        
+        for (int i = 0; i < SIZE; ++i)
+            printf("%i, ", result[i]);
+        
+        printf("\n\n\n\n");
+        
+    }
     /*
      blockSum call blueprint
      size_t blockSize = 128;
@@ -300,7 +455,7 @@ int main(int argc, const char * argv[]) {
      
      with p threads, O(N/P + logN)
      */
-    
+  
     popContext(contexts[0]);
     
     return EXIT_SUCCESS;

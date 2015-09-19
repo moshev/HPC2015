@@ -37,8 +37,11 @@ kernel void raceCondition(int* a) {
 
 //************************************************
 
-kernel void sum0(int* a, int count, int* result) {
+kernel void sum0(int* a, int* countPtr, int* result) {
     const int i = getGlobalID();
+    
+    const int count = *countPtr;
+    
     if (i > count) {
         return;
     }
@@ -48,13 +51,20 @@ kernel void sum0(int* a, int count, int* result) {
 
 //************************************************
 
-kernel void sum1(int* a, int count, int* result) {
+kernel void sum1(int* a, int* countPtr, int* result) {
     shared int partialSum;
-    if (threadIdx.x == 0)
-        partialSum = 0;
-    syncThreads();
     
     const int i = getGlobalID();
+    const int count = *countPtr;
+    
+    if (i > count)
+        return;
+    
+    if (threadIdx.x == 0)
+        partialSum = 0;
+    
+    syncThreads();
+    
     atomicAdd(&partialSum, a[i]);
     
     if (threadIdx.x == 0)
@@ -77,7 +87,7 @@ kernel void adjDiff0(int* result, int* input) {
 
 //************************************************
 
-kernel void ajdDiff1(int* result, int* input) {
+kernel void adjDiff1(int* result, int* input) {
     int tx = threadIdx.x;
     
     shared int sharedData[BLOCK_SIZE]; //compile-time vs run-time
@@ -120,10 +130,10 @@ kernel void badKernel1(int* foo) { //hard crash
 
 //************************************************
 
-kernel void matMul0(float* a, float* b, float* ab, int width) {
+kernel void matMul0(float* a, float* b, float* ab, int* widthPtr) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int column = blockIdx.x * blockDim.x + threadIdx.x;
-
+    const int width = *widthPtr;
     float res = 0;
     
     for (int k = 0; k < width; ++k)
@@ -135,7 +145,7 @@ kernel void matMul0(float* a, float* b, float* ab, int width) {
 //************************************************
 #define TILE_WIDTH 32
 
-kernel void matMul1(float* a, float* b, float* ab, int width) {
+kernel void matMul1(float* a, float* b, float* ab, int* widthPtr) {
     int tx = threadIdx.x, ty = threadIdx.y;
     int bx = blockIdx.x, by = blockIdx.y;
 
@@ -146,6 +156,8 @@ kernel void matMul1(float* a, float* b, float* ab, int width) {
     int col = bx * blockDim.x + tx;
     
     float res = 0;
+    
+    const int width = *widthPtr;
     
     for (int p = 0; p < width/TILE_WIDTH; ++p) {
         sA[ty][tx] = a[row * width + (p * TILE_WIDTH + tx)];
