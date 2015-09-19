@@ -53,7 +53,7 @@
 
 #define COUNT_OF(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 
-enum LogType { LogTypeInfo = 0, LogTypeWarning, LogTypeError, LogTypeNone };
+enum LogType { LogTypeInfo = 0, LogTypeInfoRaw = 0, LogTypeWarning, LogTypeError, LogTypeNone };
 
 const LogType LOG_LEVEL = LogTypeInfo;
 
@@ -63,25 +63,28 @@ void printLog(LogType priority, const char *format, ...) {
     if(priority < LOG_LEVEL)
         return;
     
-    char s[512];
-    
-    time_t t = time(NULL);
-    struct tm * p = localtime(&t);
-    strftime(s, 512, "[%H:%M:%S] ", p);
-    
-    printf("%s", s);
-    switch (priority) {
-        case LogTypeInfo:
-            printf("Info: ");
-            break;
-        case LogTypeWarning:
-            printf("Warning: ");
-            break;
-        case LogTypeError:
-            printf("Error: ");
-            break;
-        default:
-            break;
+    if (priority != LogTypeInfoRaw) {
+        char s[512];
+        
+        time_t t = time(NULL);
+        struct tm * p = localtime(&t);
+        strftime(s, 512, "[%H:%M:%S] ", p);
+        
+        printf("%s", s);
+        switch (priority) {
+            case LogTypeInfo:
+                printf("Info: ");
+                break;
+            case LogTypeWarning:
+                printf("Warning: ");
+                break;
+            case LogTypeError:
+                printf("Error: ");
+                break;
+            default:
+                break;
+        }
+            
     }
     
     va_list args;
@@ -146,15 +149,16 @@ int main(int argc, const char * argv[]) {
     CUresult err = CUDA_SUCCESS;
     err = cuInit(0);
     CHECK_ERROR(err);
-    int count = 0;
-    err = cuDeviceGetCount(&count);
+    
+    int devicesCount = 0;
+    err = cuDeviceGetCount(&devicesCount);
     CHECK_ERROR(err);
     
     std::vector<CUdevice> devices;
     std::vector<CUcontext> contexts;
     std::vector<CUmodule> programs;
     
-    for (unsigned i = 0; i < count; ++i) {
+    for (unsigned i = 0; i < devicesCount; ++i) {
         CUdevice device;
         err = cuDeviceGet(&device, i);
         CHECK_ERROR(err);
@@ -168,7 +172,7 @@ int main(int argc, const char * argv[]) {
                               );
         CHECK_ERROR(err);
         
-        printf("Found device named %s\n", (char*)buffer);
+        printLog(LogTypeInfo, "Found device named %s\n", (char*)buffer);
         
         CUcontext pctx;
         err = cuCtxCreate(&pctx, CU_CTX_SCHED_AUTO, device);
@@ -190,13 +194,11 @@ int main(int argc, const char * argv[]) {
         size_t programLogSize;
         nvRes = nvrtcGetProgramLogSize(program, &programLogSize);
         CHECK_ERROR(nvRes);
-        char* log = new char[programLogSize + 1];
+        std::unique_ptr<char[]> log (new char[programLogSize + 1]);
         
-        nvRes = nvrtcGetProgramLog(program, log);
+        nvRes = nvrtcGetProgramLog(program, log.get());
         CHECK_ERROR(nvRes);
-        printLog(LogTypeError, "%s", log);
-        
-        delete[] log;
+        printLog(LogTypeError, "%s", log.get());
         
         return EXIT_FAILURE;
     }
@@ -205,18 +207,20 @@ int main(int argc, const char * argv[]) {
     nvRes = nvrtcGetPTXSize(program, &ptxSize);
     CHECK_ERROR(nvRes);
     
-    char* ptx = new char[ptxSize + 1];
-    nvRes = nvrtcGetPTX(program, ptx);
+    std::unique_ptr<char[]> ptx(new char[ptxSize + 1]);
+    nvRes = nvrtcGetPTX(program, ptx.get());
     
     const char* TARGET_CUDA_SAVE_PTX_PATH = "/Users/savage309/Desktop/blago.txt";
     
-    std::fstream ptxStream(TARGET_CUDA_SAVE_PTX_PATH, std::ios_base::trunc | std::ios_base::out);
-    if (!ptxStream.good()) {
-        printLog(LogTypeWarning, "Could not save PTX IR to %s\n", TARGET_CUDA_SAVE_PTX_PATH);
-    } else {
-        printLog(LogTypeInfo, "PTX IR saved to %s\n", TARGET_CUDA_SAVE_PTX_PATH);
+    {
+        std::fstream ptxStream(TARGET_CUDA_SAVE_PTX_PATH, std::ios_base::trunc | std::ios_base::out);
+        if (!ptxStream.good()) {
+            printLog(LogTypeWarning, "Could not save PTX IR to %s\n", TARGET_CUDA_SAVE_PTX_PATH);
+        } else {
+            printLog(LogTypeInfo, "PTX IR saved to %s\n", TARGET_CUDA_SAVE_PTX_PATH);
+        }
+        ptxStream << ptx.get();
     }
-    ptxStream << ptx;
     
     const size_t JIT_NUM_OPTIONS = 8;
     const size_t JIT_BUFFER_SIZE_IN_BYTES = 1024;
@@ -251,14 +255,13 @@ int main(int argc, const char * argv[]) {
     jitValues[valuesCounter++] = (void*)errorBufferSize;
     for (int i = 0; i < devices.size(); ++i) {
         CUmodule program;
-        err = cuModuleLoadDataEx(&program, ptx, JIT_NUM_OPTIONS, jitOptions, jitValues);
+        err = cuModuleLoadDataEx(&program, ptx.get(), JIT_NUM_OPTIONS, jitOptions, jitValues);
         CHECK_ERROR(err);
         programs.push_back(program);
         printLog(LogTypeInfo, "program for device %i compiled\n", i);
     }
     nvRes = nvrtcDestroyProgram(&program);
     CHECK_ERROR(nvRes);
-    delete[] ptx;
     
     //*******************************************************
     const int SIZE = 1024 * 2;
@@ -271,7 +274,6 @@ int main(int argc, const char * argv[]) {
     static_assert((SIZE % localSize) == 0, "number of threads should be multiple of localSize");
     unsigned int globalSize = SIZE / localSize;
 
-    
     CUfunction kernel;
     
     const char* kernels[] = {"position196",
@@ -299,16 +301,15 @@ int main(int argc, const char * argv[]) {
                              );
         CHECK_ERROR(err);
         
-        
         std::unique_ptr<int[]> result(new int[SIZE]);
 
         err = cuMemcpyDtoH(result.get(), devicePtr, sizeof(int) * SIZE);
         CHECK_ERROR(err);
         for (int i = 0; i < SIZE; ++i) {
-            printf("%i, ", result[i]);
+            printLog(LogTypeInfoRaw, "%i, ", result[i]);
         }
         
-        printf("\n\n\n\n");
+        printLog(LogTypeInfoRaw,"\n\n\n\n");
 
     }
 
@@ -337,7 +338,7 @@ int main(int argc, const char * argv[]) {
         
         err = cuMemcpyDtoH(&sumResult, resultPtr, sizeof(int));
         CHECK_ERROR(err);
-        printf("sum0 result %i\n\n\n\n", sumResult);
+        printLog(LogTypeInfoRaw,"sum0 result %i\n\n\n\n", sumResult);
 
     }
 
@@ -365,7 +366,7 @@ int main(int argc, const char * argv[]) {
         
         err = cuMemcpyDtoH(&sumResult, resultPtr, sizeof(int));
         CHECK_ERROR(err);
-        printf("sum1 result %i\n\n\n\n", sumResult);
+        printLog(LogTypeInfoRaw,"sum1 result %i\n\n\n\n", sumResult);
         
     }
 
@@ -397,9 +398,9 @@ int main(int argc, const char * argv[]) {
         CHECK_ERROR(err);
         
         for (int i = 0; i < SIZE; ++i)
-            printf("%i, ", result[i]);
+            printLog(LogTypeInfoRaw,"%i, ", result[i]);
         
-        printf("\n\n\n\n");
+        printLog(LogTypeInfoRaw,"\n\n\n\n");
         
     }
 
@@ -431,9 +432,9 @@ int main(int argc, const char * argv[]) {
         CHECK_ERROR(err);
         
         for (int i = 0; i < SIZE; ++i)
-            printf("%i, ", result[i]);
+            printLog(LogTypeInfoRaw,"%i, ", result[i]);
         
-        printf("\n\n\n\n");
+        printLog(LogTypeInfoRaw,"\n\n\n\n");
         
     }
     
@@ -487,10 +488,10 @@ int main(int argc, const char * argv[]) {
             for (int j = 0; j < matWidth; ++j) {
                 const int pos = i + matWidth * j;
 
-                printf("%f, ", h_ab[pos]);
+                printLog(LogTypeInfoRaw,"%f, ", h_ab[pos]);
             }
         }
-        printf("\n\n\n\n");
+        printLog(LogTypeInfoRaw,"\n\n\n\n");
     }
     
     
@@ -544,10 +545,10 @@ int main(int argc, const char * argv[]) {
             for (int j = 0; j < matWidth; ++j) {
                 const int pos = i + matWidth * j;
                 
-                printf("%f, ", h_ab[pos]);
+                printLog(LogTypeInfoRaw, "%f, ", h_ab[pos]);
             }
         }
-        printf("\n\n\n\n");
+        printLog(LogTypeInfoRaw, "\n\n\n\n");
     }
     /*
      blockSum call blueprint
