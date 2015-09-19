@@ -131,6 +131,7 @@ struct DeviceBuffer {
         CUresult res = cuMemAlloc(&ptr, numBytes);
         CHECK_ERROR(res);
         res = cuMemcpyHtoD(ptr, srcPtr, sizeof(int));
+        res = cuMemcpyHtoD(ptr, srcPtr, numBytes);
         CHECK_ERROR(res);
     }
     ~DeviceBuffer() {
@@ -435,6 +436,119 @@ int main(int argc, const char * argv[]) {
         
         printf("\n\n\n\n");
         
+    }
+    
+    if (1)
+    {
+        const int STRIDE = 8;
+        int matWidth = STRIDE * STRIDE;
+        
+        std::unique_ptr<float[]> h_a(new float[matWidth * matWidth]);
+        std::unique_ptr<float[]> h_b(new float[matWidth * matWidth]);
+        std::unique_ptr<float[]> h_ab(new float[matWidth * matWidth]);
+
+        for (int i = 0; i < matWidth; ++i) {
+            for (int j = 0; j < matWidth; ++j) {
+                const int pos = i + matWidth * j;
+                
+                h_a[pos] = float(i) / matWidth;
+                h_b[pos] = float(j) / matWidth;
+                h_ab[pos] = 0.f;
+            }
+        }
+
+
+        DeviceBuffer a(matWidth * matWidth * sizeof(float), h_a.get());
+   
+        DeviceBuffer b(matWidth * matWidth * sizeof(float), h_b.get());
+        DeviceBuffer ab(matWidth * matWidth * sizeof(float), h_ab.get());
+        DeviceBuffer widthPtr(sizeof(int), &matWidth);
+
+        
+        const char* kernelName = "matMul0";
+        err = cuModuleGetFunction(&kernel, programs[0], kernelName);
+        CHECK_ERROR(err);
+        
+        void *paramsPtrs[4] = {&a, &b, &ab, &widthPtr};
+        
+        printLog(LogTypeInfo, "Launching kernel %s\n", kernelName);
+        err = cuLaunchKernel(kernel, STRIDE, STRIDE, 1UL, // grid size
+                             STRIDE, STRIDE, 1UL, // block size
+                             0, // shared size
+                             NULL, // stream
+                             &paramsPtrs[0],
+                             NULL
+                             );
+        CHECK_ERROR(err);
+
+        err = cuMemcpyDtoH(h_ab.get(), ab, sizeof(float) * matWidth * matWidth);
+        CHECK_ERROR(err);
+        
+        for (int i = 0; i < matWidth; ++i) {
+            for (int j = 0; j < matWidth; ++j) {
+                const int pos = i + matWidth * j;
+
+                printf("%f, ", h_ab[pos]);
+            }
+        }
+        printf("\n\n\n\n");
+    }
+    
+    
+    if (1)
+    {
+        int matWidth = 64;
+        
+        std::unique_ptr<float[]> h_a(new float[matWidth * matWidth]);
+        std::unique_ptr<float[]> h_b(new float[matWidth * matWidth]);
+        std::unique_ptr<float[]> h_ab(new float[matWidth * matWidth]);
+        for (int i = 0; i < matWidth; ++i) {
+            for (int j = 0; j < matWidth; ++j) {
+                const int pos = i + matWidth * j;
+
+                h_a[pos] = float(i) / matWidth;
+                h_b[pos] = float(j) / matWidth;
+                h_ab[pos] = 0.f;
+            }
+        }
+        
+        DeviceBuffer a(matWidth * matWidth * sizeof(float), h_a.get());
+        
+        DeviceBuffer b(matWidth * matWidth * sizeof(float), h_b.get());
+        DeviceBuffer ab(matWidth * matWidth * sizeof(float), h_ab.get());
+        DeviceBuffer widthPtr(sizeof(int), &matWidth);
+        
+        
+        const char* kernelName = "matMul1";
+        err = cuModuleGetFunction(&kernel, programs[0], kernelName);
+        CHECK_ERROR(err);
+        
+        void *paramsPtrs[4] = {&a, &b, &ab, &widthPtr};
+        
+        /*in sync with kernels.cu::matMul1*/
+        const int TILE_WIDTH = 8;
+        
+        printLog(LogTypeInfo, "Launching kernel %s\n", kernelName);
+        err = cuLaunchKernel(kernel, TILE_WIDTH, TILE_WIDTH, 1UL, // grid size
+                             matWidth/TILE_WIDTH, matWidth/TILE_WIDTH, 1UL, // block size
+                             0, // shared size
+                             NULL, // stream
+                             &paramsPtrs[0],
+                             NULL
+                             );
+        CHECK_ERROR(err);
+        
+        err = cuMemcpyDtoH(h_ab.get(), ab, sizeof(float) * matWidth * matWidth);
+        CHECK_ERROR(err);
+        
+        for (int i = 0; i < matWidth; ++i) {
+            for (int j = 0; j < matWidth; ++j) {
+                const int pos = i + matWidth * j;
+                
+                printf("%f, ", h_ab[pos]);
+            }
+        }
+        printf("\n\n\n\n");
     }
     /*
      blockSum call blueprint

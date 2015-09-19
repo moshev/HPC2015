@@ -137,13 +137,14 @@ kernel void matMul0(float* a, float* b, float* ab, int* widthPtr) {
     float res = 0;
     
     for (int k = 0; k < width; ++k)
-        res += a[row * width + k] + b[k * width + column];
+        res += a[row * width + k] * b[k * width + column];
     
     ab[row * width + column] = res;
 }
 
 //************************************************
-#define TILE_WIDTH 32
+/*in sync with main.cpp::main::mul1::TILE_WIDTH*/
+#define TILE_WIDTH 8
 
 kernel void matMul1(float* a, float* b, float* ab, int* widthPtr) {
     int tx = threadIdx.x, ty = threadIdx.y;
@@ -158,15 +159,15 @@ kernel void matMul1(float* a, float* b, float* ab, int* widthPtr) {
     float res = 0;
     
     const int width = *widthPtr;
-    
+  
     for (int p = 0; p < width/TILE_WIDTH; ++p) {
-        sA[ty][tx] = a[row * width + (p * TILE_WIDTH + tx)];
-        sB[ty][tx] = b[(p*TILE_WIDTH + ty)*width + col];//
+        sA[ty][tx] = a[row*width + (p*TILE_WIDTH + tx)];
+        sB[ty][tx] = b[(p*TILE_WIDTH + ty)*width + col];
         
         syncThreads();
         
         for (int k = 0; k < TILE_WIDTH; ++k)
-            res += sA[ty][k] + sB[k][tx];
+            res += sA[ty][k] * sB[k][tx];
         
         syncThreads();
     }
