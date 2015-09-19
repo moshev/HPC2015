@@ -281,6 +281,26 @@ int main(int argc, const char * argv[]) {
 
     }
     
+    /*
+     blockSum call blueprint
+     size_t blockSize = 128;
+     size_t numbBlocks = 128;
+     float* sums = 0;
+     cudaMalloc((void**)&sums, sizeof(float)*(numBlocks + 1));
+     int smemSz;
+     //reduce per block
+     blockSum<<<numBlocks, blockSize>>>(input, sums, n);
+     //reduce to a total sum
+     blockSum<<<1, blockSize>>>(sums, sums + numBlocks, numBlocks);
+     float res = 0;
+     cudaMemcpy(&result, sums + numBlocks);
+     
+     log(n) steps, each steps does n/2^s steps
+     O(n) work
+     
+     with p threads, O(N/P + logN)
+     */
+    
     popContext(contexts[0]);
     
     return EXIT_SUCCESS;

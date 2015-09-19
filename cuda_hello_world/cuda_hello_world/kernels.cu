@@ -161,3 +161,77 @@ kernel void matMul1(float* a, float* b, float* ab, int width) {
     
     ab[row*width + col] = res;
 }
+
+//************************************************
+
+kernel void badMemoryAccess(int* input, int* output) {
+    const int i = getGlobalID();
+    
+    int a = input[i];
+    
+    int STRIDE = 2;
+    
+    int b = input[i * STRIDE];
+
+    output[i] = a + b;
+}
+
+//************************************************
+//reduce example
+
+kernel void blockSum(float* input,
+              float* results,
+              size_t n) {
+    
+    shared float sdata[BLOCK_SIZE];
+    const int i = getGlobalID();
+    const int tx = getGlobalID();
+    //
+    float x = 0;
+    if (i < n)
+        x = input[i];
+    sdata[tx] = x;
+    syncThreads();
+    
+    for (int offset = blockDim.x / 2;
+         offset > 0;
+         offset >>= 1)
+    {
+        if (tx < offset) {
+            sdata[tx] += sdata[tx + offset];
+        }
+        syncThreads();
+    }
+    if (threadIdx.x == 0) {
+        results[blockIdx.x] = sdata[0];
+    }
+}
+
+//************************************************
+//results local to each block
+kernel void inclusiveScan(int* data) {
+    shared int sdata[BLOCK_SIZE];
+    const int i = getGlobalID();
+    
+    int sum = data[i];
+    
+    sdata[threadIdx.x] = sum;
+    
+    syncThreads();
+    
+    for (int o = blockDim.x;
+         o < blockDim.x;
+         o <<= 1)
+    {
+        if (threadIdx.x >= o)
+            sum += sdata[threadIdx.x - o];
+        
+        syncThreads();
+    
+        sdata[threadIdx.x] = sum;
+        
+        syncThreads();
+    }
+    
+    data[i] = sdata[threadIdx.x];
+}
