@@ -23,7 +23,6 @@ namespace ILP {
         auto test0 = [&](){
             UNROLL
             for (int i = 0 ; i < getTestSize(); ++i) {
-                { asm(""); }
                 x = y * z;
                 q += z + x + x;
                 x = a + b;
@@ -34,7 +33,6 @@ namespace ILP {
         auto test1 = [&]() {
             UNROLL
             for (int i = 0 ; i < getTestSize(); ++i) {
-                { asm(""); }
                 float x0 = y * z;
                 q += z + x0 + x0;
                 x = a + b;
@@ -54,7 +52,6 @@ namespace ILP {
         std::for_each(b.get(), b.get() + getTestSize(), [](float) { return randomFloat();});
         
         auto test0 = [&] {
-            UNROLL
             for (int i = 0; i < getTestSize(); ++i) {
                 a[i] = b[i];
                 b[i] = b[i] + randomFloat();
@@ -62,7 +59,6 @@ namespace ILP {
         };
         
         auto test1 = [&] {
-            UNROLL
             for (int i = 0; i < getTestSize(); ++i) {
                 float temp = b[i];
                 a[i] = temp;

@@ -116,6 +116,18 @@ Programming Model:
 
 ---
 
+![](./images/old_graphics_pipeline.PNG)
+
+OpenGL, DirectX, Vulcan, Metal, Mantle, PlayStation
+
+---
+
+![](./images/gpapi_concept.png)
+
+Shader units execution only
+
+---
+
 Each API has two parts - C/C++ API to send tasks & data to the device (1) and C-based language, used to write programs for the device (2)
 
 1. OpenCL (Khronos) - **everywhere\***
@@ -128,11 +140,18 @@ In contrast, APIs for graphics* are OpenGL, DirectX, Metal, Vulcan
 
 ---
 
+
 GPGPU API goals
 * Use (all computational) resources in the system — CPUs, GPUs and others
 * Based on C99
 * Data- and task- parallel computational model
 * Abstract the specifics of underlying hardware
+
+---
+
+![opencl apis](./images/opencl_apis.png)
+
+<a href="http://www.bing.com">bing</a> for **"{VENDOR} {CPU/GPU} OpenCL Runtime"**
 
 ---
 
@@ -302,9 +321,9 @@ sum(a, b, res);
 GPGPU
 ```
 kernel void sum(float* a, float* b, float* res, int count) {
-    int id = get_global_id(0);
-    if (id > count) return;
-    res[id] = a[id] + b[id];
+    int i = get_global_id(0);
+    if (i > count) return;
+    res[i] = a[i] + b[i];
 }
 ```
 ```

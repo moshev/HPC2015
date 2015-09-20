@@ -42,9 +42,8 @@ inline int randomInt(int min, int max) {
     return min + (max - min) * randomFloat();
 }
 
-
 constexpr
-unsigned long long operator"" _million ( unsigned long long v ) {
+unsigned long long operator"" _million ( const unsigned long long v ) {
     return v*1000000ULL;
 }
 

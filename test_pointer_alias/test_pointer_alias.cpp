@@ -2,6 +2,8 @@
 #include "test_pointer_alias.h"
 #include "diffclock.h"
 #include <iostream>
+#include "simd/simd.h"
+
 namespace PointerAlias {
     void test() {
         std::cout << "Testing pointer alias ..." << std::endl;
@@ -89,8 +91,9 @@ namespace PointerAlias {
         ADD_BENCHMARK("PointerAlias \t DifferentTypeNoCast", test2);
         ADD_BENCHMARK("PointerAlias \t SameTypeRestrict", test3);
         ADD_BENCHMARK("PointerAlias \t SSE", test4);
+#if (defined __AVX__)
         ADD_BENCHMARK("PointerAlias \t AVX", test5);
-
+#endif
         benchpress::run_benchmarks(benchpress::options());
     }
     

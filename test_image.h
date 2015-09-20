@@ -191,7 +191,9 @@ namespace Image {
         ADD_BENCHMARK("Image \t Column", test0);
         ADD_BENCHMARK("Image \t Row", test1);
         ADD_BENCHMARK("Image \t SSE", test2);
+#ifdef __AVX__
         ADD_BENCHMARK("Image \t AVX", test3);
+#endif
         benchpress::run_benchmarks(benchpress::options());
         
         return  res + resSSE[0] + resSSE[1] + resSSE[3] + resSSE[2]

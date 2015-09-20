@@ -3,6 +3,10 @@
 #define shared __shared__
 #define syncThreads __syncthreads
 
+#if __cplusplus > 199711L
+#define HAS_CPP_11
+#endif
+
 #define BLOCK_SIZE 32
 
 device int getGlobalID() {
@@ -37,6 +41,18 @@ kernel void raceCondition(int* a) {
 
 //************************************************
 
+__noinline__
+int testNoInlineFunc(int* ptr) {
+    int result = 0;
+    for (int i = 0; i < ptr[0]; ++i)
+        result += ptr[i];
+
+    return result;
+
+}
+
+#ifdef HAS_CPP_11
+#include "stdio.h"
 struct A {
 private:
     enum class Options {None, One, All};
@@ -59,6 +75,7 @@ public:
     device A(const A&&){}
     device virtual void foo() final { }
 };
+#endif //HAS_CPP_11
 
 //************************************************
 
