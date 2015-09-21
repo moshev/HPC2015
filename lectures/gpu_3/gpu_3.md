@@ -65,6 +65,16 @@ Usually, there is 1 **stream** for each host thread.
 
 ---
 
+CUDA compilation
+![](./images/cuda_compiler_flow.png)
+
+---
+
+OpenCL compilation
+![](./images/opencl_compiler_flow.png)
+
+---
+
 You have so many raw flops power, that almost all of the time you are memory bound
 
 Re-calculating sometimes is better than caching.
@@ -106,6 +116,20 @@ Proiflers can help.
 ---
 
 ## [DEMO ADJ DIFF]
+
+---
+
+Pinned memory
+
+```
+CUresult err = cuMemHostAlloc( &buf, size, 0);
+```
+
+```
+clCreateBuffer(clContext, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR, size, NULL, &err);
+```
+
+![](./images/pinned_memory.png)
 
 ---
 
@@ -362,3 +386,32 @@ How many ones/zeros to my left -> prefix sum
 ---
 
 # [DEMO Case study - GPU raytracer]
+
+---
+
+# [DEMO nSight profiling]
+
+---
+
+Recap
+
+* nSight (-lineinfo)
+* Shared mem
+* Fast Math
+* maxregcount
+
+---
+
+![](./images/wave_front0.png)
+
+---
+
+![](./images/wave_front1.png)
+
+---
+
+![](./images/wave_front2.png)
+
+---
+
+Q&A
