@@ -293,6 +293,17 @@ multi kernel
 
 ---
 
+![](./images/matrix_multiply_static.png)
+
+---
+
+![](./images/matrix_multi.gif)
+
+---
+
+##[DEMO Matrix Multiply 2]
+
+---
 
 #reduction
 
