@@ -42,6 +42,7 @@ kernel void raceCondition(int* a) {
 //************************************************
 
 __noinline__
+__device__
 int testNoInlineFunc(int* ptr) {
     int result = 0;
     for (int i = 0; i < ptr[0]; ++i)

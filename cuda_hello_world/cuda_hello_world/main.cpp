@@ -201,7 +201,7 @@ void loadCUDAKernel(std::vector<CUdevice>& devices, std::vector<CUcontext>& cont
     nvrtcProgram program;
     nvRes = nvrtcCreateProgram(&program, source.c_str(), "compiled_kernel", 0, NULL, NULL);
     
-    const char* options[] = {"--gpu-architecture=compute_20","--maxrregcount=64","--use_fast_math", "--std=c++11"};
+    const char* options[] = {"--gpu-architecture=compute_20","--maxrregcount=64","--use_fast_math"};//, "--std=c++11"};
     nvRes = nvrtcCompileProgram(program, COUNT_OF(options), options);
     
     if (nvRes != NVRTC_SUCCESS) {
