@@ -43,7 +43,9 @@
 //for CUDA API
 #include "cuda.h"
 //for NVRTC
-#include "nvrtc.h"
+#ifdef CUDA_USE_NVRTC
+#   include "nvrtc.h"
+#endif
 //STD
 #include <vector>
 #include <string>
@@ -116,8 +118,12 @@ std::string getProgramSource(const std::string& path) {
 
 std::vector<char> getProgramBinary(const std::string& path) {
     std::ifstream input(path.c_str(), std::ios::binary);
-    return std::vector<char>(std::istreambuf_iterator<char>(input),
+    if (!input.good()) {
+        printLog(LogTypeError, "program binary not found\n");
+    }
+   std::vector<char> result((std::istreambuf_iterator<char>(input)),
                              std::istreambuf_iterator<char>());
+    return std::move(result);
 }
 
 inline void pushContext(CUcontext context) {
@@ -270,10 +276,10 @@ void loadCUDAKernel(std::vector<CUdevice>& devices, std::vector<CUcontext>& cont
     nvRes = nvrtcDestroyProgram(&program);
     CHECK_ERROR(nvRes);
 #else
-    const char* pathToBinaryKernel = "./kernels.cubin";
+    const char* pathToBinaryKernel = "/Developer/git/hpc2015/GPAPI/GPAPI/HPC2015/cuda_hello_world/cuda_hello_world/kernels.cubin";
     std::vector<char> image;
     printLog(LogTypeInfo, "Tryign to load binari kernel from %s\n", pathToBinaryKernel);
-    getProgramBinary(pathToBinaryKernel);
+    image = getProgramBinary(pathToBinaryKernel);
     
     for (int i = 0; i < devices.size(); ++i) {
         CUmodule program;

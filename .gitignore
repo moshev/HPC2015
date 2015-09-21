@@ -38,3 +38,5 @@ cuda_hello_world/build/cuda_hello_world.build/Debug/cuda_hello_world.build/dgph
 *.dylib
 
 cuda_hello_world/cuda_hello_world/kernels.ptx
+
+*.cubin
