@@ -305,7 +305,7 @@ int main(int argc, const char * argv[]) {
     
     //*******************************************************
     
-    const int SIZE = 1024 * 2;
+    const int SIZE = 1024;
 
     pushContext(contexts[0]);
     DeviceBuffer devicePtr(SIZE * sizeof(int));
@@ -591,26 +591,84 @@ int main(int argc, const char * argv[]) {
         }
         printLog(LogTypeInfoRaw, "\n\n\n\n");
     }
-    /*
-     blockSum call blueprint
-     size_t blockSize = 128;
-     size_t numbBlocks = 128;
-     float* sums = 0;
-     cudaMalloc((void**)&sums, sizeof(float)*(numBlocks + 1));
-     int smemSz;
-     //reduce per block
-     blockSum<<<numBlocks, blockSize>>>(input, sums, n);
-     //reduce to a total sum
-     blockSum<<<1, blockSize>>>(sums, sums + numBlocks, numBlocks);
-     float res = 0;
-     cudaMemcpy(&result, sums + numBlocks);
-     
-     log(n) steps, each steps does n/2^s steps
-     O(n) work
-     
-     with p threads, O(N/P + logN)
-     */
-  
+    //naive adj difference
+    {
+        std::unique_ptr<int[]> result(new int[SIZE]);
+        for (int i = 0; i < SIZE; ++i) {
+            result[i] = i;
+            
+        }
+        DeviceBuffer resultPtr(SIZE * sizeof(int), result.get());
+        
+        const char* kernelName = "inclusiveScan";
+        err = cuModuleGetFunction(&kernel, programs[0], kernelName);
+        CHECK_ERROR(err);
+        
+        void *paramsPtrs[1] = {&resultPtr};
+        
+        printLog(LogTypeInfo, "Launching kernel %s\n", kernelName);
+        err = cuLaunchKernel(kernel, globalSize, 1UL, 1UL, // grid size
+                             localSize, 1UL, 1UL, // block size
+                             0, // shared size
+                             NULL, // stream
+                             &paramsPtrs[0],
+                             NULL
+                             );
+        
+        err = cuMemcpyDtoH(result.get(), resultPtr, SIZE * sizeof(int));
+        CHECK_ERROR(err);
+        
+        for (int i = 0; i < SIZE; ++i)
+            printLog(LogTypeInfoRaw,"%i, ", result[i]);
+        
+        printLog(LogTypeInfoRaw,"\n\n\n\n");
+        
+    }
+        
+    {
+        std::unique_ptr<int[]> h_blocks(new int[globalSize]);
+        memset(h_blocks.get(), 0, sizeof(int) * globalSize);
+        DeviceBuffer blocks(globalSize * sizeof(int), h_blocks.get());
+        //
+        std::unique_ptr<int[]> h_data(new int[SIZE]);
+        for (int i = 0; i < SIZE; ++i)
+            h_data[i] = i;
+        DeviceBuffer data(SIZE * sizeof(int), h_data.get());
+        //
+        std::unique_ptr<int> h_n(new int);
+        *h_n = SIZE;
+        DeviceBuffer n(sizeof(int), h_n.get());
+        //
+        const char* kernelName = "blockSum";
+        err = cuModuleGetFunction(&kernel, programs[0], kernelName);
+        CHECK_ERROR(err);
+        
+        void *paramsPtrs[3] = {&data, &blocks, &n};
+        
+        printLog(LogTypeInfo, "Launching kernel %s\n", kernelName);
+        err = cuLaunchKernel(kernel, globalSize, 1UL, 1UL, // grid size
+                             localSize, 1UL, 1UL, // block size
+                             0, // shared size
+                             NULL, // stream
+                             &paramsPtrs[0],
+                             NULL
+                             );
+        CHECK_ERROR(err);
+        
+        void *paramsPtrs2[3] = {&blocks, &blocks, &n};
+        err = cuLaunchKernel(kernel, 1, 1UL, 1UL, // grid size
+                             localSize, 1UL, 1UL, // block size
+                             0, // shared size
+                             NULL, // stream
+                             &paramsPtrs2[0],
+                             NULL
+                             );
+        CHECK_ERROR(err);
+        err = cuMemcpyDtoH(h_blocks.get(), blocks, globalSize * sizeof(int));
+        CHECK_ERROR(err);
+        printf("%i ", h_blocks[0]);
+    }
+    
     popContext(contexts[0]);
     
     return EXIT_SUCCESS;

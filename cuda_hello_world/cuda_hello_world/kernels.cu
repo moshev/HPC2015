@@ -236,35 +236,48 @@ kernel void badMemoryAccess(int* input, int* output) {
 
 //************************************************
 //reduce example
-
-kernel void blockSum(float* input,
-              float* results,
-              size_t n) {
+kernel void blockSum(int* input, int* results, size_t* nPtr) {
     
-    shared float sdata[BLOCK_SIZE];
+    size_t n = *nPtr;
+    
+    shared int sharedData[BLOCK_SIZE];
     const int i = getGlobalID();
-    const int tx = getGlobalID();
+    const int tx = threadIdx.x;
     //
-    float x = 0;
-    if (i < n)
-        x = input[i];
-    sdata[tx] = x;
+    if (threadIdx.x == 0) {
+        for (int i = 0; i < BLOCK_SIZE; ++i)
+            sharedData[i] = 0;
+    }
+    
     syncThreads();
+    
+    int x = 0;
+    
+    if (i >= n)
+        return;
+    
+    x = input[i];
+    
+    sharedData[tx] = x;
+    syncThreads();
+    
     
     for (int offset = blockDim.x / 2;
          offset > 0;
          offset >>= 1)
     {
         if (tx < offset) {
-            sdata[tx] += sdata[tx + offset];
+            sharedData[tx] += sharedData[tx + offset];
         }
         syncThreads();
     }
     if (threadIdx.x == 0) {
-        results[blockIdx.x] = sdata[0];
+        results[blockIdx.x] = sharedData[0];
     }
 }
 
+//0 1 2 3 4
+//0 1 3 6 10
 //************************************************
 //results local to each block
 kernel void inclusiveScan(int* data) {
@@ -276,11 +289,8 @@ kernel void inclusiveScan(int* data) {
     sdata[threadIdx.x] = sum;
     
     syncThreads();
-    
-    for (int o = blockDim.x;
-         o < blockDim.x;
-         o <<= 1)
-    {
+   
+    for (int o = 1; o < blockDim.x; o <<= 1) {
         if (threadIdx.x >= o)
             sum += sdata[threadIdx.x - o];
         
