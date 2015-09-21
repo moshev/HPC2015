@@ -114,6 +114,12 @@ std::string getProgramSource(const std::string& path) {
     return std::string((std::istreambuf_iterator <char>(programSource)), std::istreambuf_iterator <char>());
 }
 
+std::vector<char> getProgramBinary(const std::string& path) {
+    std::ifstream input(path.c_str(), std::ios::binary);
+    return std::vector<char>(std::istreambuf_iterator<char>(input),
+                             std::istreambuf_iterator<char>());
+}
+
 inline void pushContext(CUcontext context) {
     CUresult err = cuCtxPushCurrent(context);
     CHECK_ERROR(err);
@@ -145,18 +151,14 @@ struct DeviceBuffer {
     }
 };
 
-int main(int argc, const char * argv[]) {
-    CUresult err = CUDA_SUCCESS;
-    err = cuInit(0);
+void initCUDAAPI(std::vector<CUdevice>& devices, std::vector<CUcontext>& contexts, std::vector<CUmodule>& programs) {
+    
+    CUresult err = cuInit(0);
     CHECK_ERROR(err);
     
     int devicesCount = 0;
     err = cuDeviceGetCount(&devicesCount);
     CHECK_ERROR(err);
-    
-    std::vector<CUdevice> devices;
-    std::vector<CUcontext> contexts;
-    std::vector<CUmodule> programs;
     
     for (unsigned i = 0; i < devicesCount; ++i) {
         CUdevice device;
@@ -180,8 +182,14 @@ int main(int argc, const char * argv[]) {
         
         contexts.push_back(pctx);
     }
-    
-    std::string source = getProgramSource("/Developer/git/GPAPI/GPAPI/HPC2015/cuda_hello_world/cuda_hello_world/kernels.cu");
+
+}
+
+void loadCUDAKernel(std::vector<CUdevice>& devices, std::vector<CUcontext>& contexts, std::vector<CUmodule>& programs) {
+#ifdef CUDA_USE_NVRTC
+    const char* pathToKernelSource = "/Developer/git/GPAPI/GPAPI/HPC2015/cuda_hello_world/cuda_hello_world/kernels.cu";
+    printLog(LogTypeInfo, "Trying to load kernel from source located at %s\n", pathToKernelSource);
+    std::string source = getProgramSource(pathToKernelSource);
     
     nvrtcResult nvRes;
     nvrtcProgram program;
@@ -199,10 +207,9 @@ int main(int argc, const char * argv[]) {
         nvRes = nvrtcGetProgramLog(program, log.get());
         CHECK_ERROR(nvRes);
         printLog(LogTypeError, "%s", log.get());
-        
-        return EXIT_FAILURE;
+        return;
     }
-
+    
     size_t ptxSize;
     nvRes = nvrtcGetPTXSize(program, &ptxSize);
     CHECK_ERROR(nvRes);
@@ -255,15 +262,43 @@ int main(int argc, const char * argv[]) {
     jitValues[valuesCounter++] = (void*)errorBufferSize;
     for (int i = 0; i < devices.size(); ++i) {
         CUmodule program;
-        err = cuModuleLoadDataEx(&program, ptx.get(), JIT_NUM_OPTIONS, jitOptions, jitValues);
+        CUresult err = cuModuleLoadDataEx(&program, ptx.get(), JIT_NUM_OPTIONS, jitOptions, jitValues);
         CHECK_ERROR(err);
         programs.push_back(program);
         printLog(LogTypeInfo, "program for device %i compiled\n", i);
     }
     nvRes = nvrtcDestroyProgram(&program);
     CHECK_ERROR(nvRes);
+#else
+    const char* pathToBinaryKernel = "./kernels.cubin";
+    std::vector<char> image;
+    printLog(LogTypeInfo, "Tryign to load binari kernel from %s\n", pathToBinaryKernel);
+    getProgramBinary(pathToBinaryKernel);
+    
+    for (int i = 0; i < devices.size(); ++i) {
+        CUmodule program;
+        
+        CUresult err = cuModuleLoadData(&program, (void*)&image[0]);
+        CHECK_ERROR(err);
+        programs.push_back(program);
+        printLog(LogTypeInfo, "program for device %i compiled\n", i);
+    }
+    
+#endif //CUDA_USE_NVRTC
+}
+
+int main(int argc, const char * argv[]) {
+    CUresult err = CUDA_SUCCESS;
+    
+    std::vector<CUdevice> devices;
+    std::vector<CUcontext> contexts;
+    std::vector<CUmodule> programs;
+    
+    initCUDAAPI(devices, contexts, programs);
+    loadCUDAKernel(devices, contexts, programs);
     
     //*******************************************************
+    
     const int SIZE = 1024 * 2;
 
     pushContext(contexts[0]);
