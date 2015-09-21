@@ -396,7 +396,8 @@ How many ones/zeros to my left -> prefix sum
 
 ---
 
-# [DEMO Case study - GPU raytracer]
+[DEMO Case study - GPU raytracer]
+![](./images/raytrace.png)
 
 ---
 
