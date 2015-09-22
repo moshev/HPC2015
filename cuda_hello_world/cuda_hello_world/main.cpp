@@ -666,7 +666,7 @@ int main(int argc, const char * argv[]) {
         CHECK_ERROR(err);
         err = cuMemcpyDtoH(h_blocks.get(), blocks, globalSize * sizeof(int));
         CHECK_ERROR(err);
-        printf("%i ", h_blocks[0]);
+        printLog(LogTypeInfo, "%i ", h_blocks[0]);
     }
     
     popContext(contexts[0]);
