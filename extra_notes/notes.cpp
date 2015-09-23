@@ -93,11 +93,13 @@ int numberOf1s(int x) {
 //*******************************************************************
 //context
 //how to find if a variable is allocated on the heap or on the stack
-
+//
+//how much is the overhead of the RAII pattern ?
 }
 //
 
 //adding additional information
-// reference counting
+//reference counting
 //memoize
 //lazy
+
