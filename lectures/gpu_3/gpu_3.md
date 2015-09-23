@@ -10,7 +10,9 @@ GPU:
 * No variable number of arguments
 * No static variables
 * Limited recursion
+ * Better go without it
 * Limited polymorphism
+ * Better go without it
 
 Function must be declared with qualifeier:
 * __global__, __device__, (__host__)
@@ -49,11 +51,31 @@ Usually, there is 1 **stream** for each host thread.
 
 ---
 
+What the host does:
+
+1. Call API::init().
+2. Query for number of devices.
+3. Get a handle to each device (get context for each device).
+4. Push the context of **device i**.
+5. Allocate / Transfer device memory. Call kernel. Wait until kernel end.
+6. Pop context for **device i**. Push the context for **device i+1**.
+7. Goto **4** if we have more devices, otherwise goto 8.
+8. Free the resources allocated per device.
+9. Call API::free().
+
+---
+
 ## [DEMO OpenCL Hello World]
 
 ---
 
 ## [DEMO Thread Local & Global Index]
+
+---
+
+The execution on the device has **no order**.
+
+If you need such, use atomics or multiple calls from the host.
 
 ---
 
@@ -70,20 +92,22 @@ CUDA compilation
 
 ---
 
+#[DEMO NVCC and NVRTC]
+
+* Loading CUDA program from CUBIN (nvcc)
+* Loading CUDA program from PTX (nvcc)
+* Loading CUDA program from CUDA SOURCE (nvrtc)
+
+"nv" = nVidia, cc = "cuda compiler", "rtc" = "runtime compiler"
+
+---
+
 OpenCL compilation
 ![](./images/opencl_compiler_flow.png)
 
 ---
 
-You have so many raw flops power, that almost all of the time you are memory bound
-
-Re-calculating sometimes is better than caching.
-
-Memory coalescing
-
-SoA vs AoS
-
-Most of the time spend optimizing is reducing the reads/write from/to memory
+#TIPS
 
 ---
 
@@ -92,6 +116,24 @@ Most of the time spend optimizing is reducing the reads/write from/to memory
 ![](./images/memory_access.png)
 
 Proiflers can help.
+
+---
+
+Reads from same thread block are grouped.
+
+Reads from same SMX are grouped.
+
+Read from DRAM are grouped.
+
+Exploit that.
+
+---
+
+Memory coalescing
+
+SoA vs AoS
+
+Most of the time spend optimizing is reducing the reads/write from/to memory
 
 ---
 
@@ -119,17 +161,35 @@ Proiflers can help.
 
 ---
 
-Pinned memory
+## [DEMO Matrix multiply]
 
-```
-CUresult err = cuMemHostAlloc( &buf, size, 0);
-```
+---
 
-```
-clCreateBuffer(clContext, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR, size, NULL, &err);
-```
+![cs193g Stanford](./images/matrix_multi_naive.png)
 
-![](./images/pinned_memory.png)
+---
+
+![](./images/matrix_multiply_static.png)
+
+---
+
+![](./images/matrix_multi.gif)
+
+---
+
+##[DEMO Matrix Multiply 2]
+
+---
+
+![cs193g Stanford](./images/matrix_multi_perf_gain.png)
+
+---
+
+![cs193g Stanford](./images/matrix_multi_tile_size.png)
+
+---
+
+This pattern (partitioning the tasks into blocks) is a common pattern, used not only in the GPGPU programming.
 
 ---
 
@@ -146,28 +206,7 @@ clCreateBuffer(clContext, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR, size, NULL,
 ---
 
 Reduce the number of parameters, that the kernels have
-```
-kernel void raytrace(float* vertexes, int* faces, float* normals,
-                     float* uv, Node* nodes, Mesh* meshes ...) { ... }
-device void intersectRay(float* vertexes, int* faces, float* normals, ...) { ... }
-```
-```
-//call one time `setArgs` to set pointers
-kernel void setArgs(SceneData* sceneData, float* vertexes, int* faces, ...) {
-    sceneData->vertexes = vertexes;
-    sceneData->faces = faces;
-    ...
-}
-//call multiple times
-kernel void raytrace(SceneData* sceneData) { ... }
-kernel void intersectRay(SceneData* sceneData) {
-    float* faces = sceneData->faces;
-    //
-}
 
-```
-
----
 
 ```
 while (hasWorkToDo) {
@@ -198,9 +237,25 @@ Test.
 
 ---
 
+You have so many raw flops power, that almost all of the time you are memory bound
+
+Random reads from **global memory** are very slow.
+
+Random reads from **constant memory** are even slower (!).
+
+Re-calculating sometimes is better than caching.
+
+---
+
 It is possible however, to achieve better performance with lower occupancy.
 
 >"Better Performance at Lower Occupancy", Volkov, GTC 2010
+
+The idea is to reduce the occupancy in order to have less spills.
+
+You can compensate that with ILP. Works in some situations.
+
+You can reduce the occupancy by allocating more shared memory, for example.
 
 ---
 
@@ -265,6 +320,8 @@ for (int i = 0; i < localIndex; ++i) {
 
 ```
 
+---
+
 CUDA occupancy calculator
 
 Registers using -xptxas -v
@@ -279,6 +336,56 @@ multi kernel
 
 ---
 
+# Faster host-device transfers
+
+---
+
+Pinned memory
+
+```
+CUresult err = cuMemHostAlloc( &buf, size, 0);
+```
+
+```
+clCreateBuffer(clContext, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR, size, NULL, &err);
+```
+
+![](./images/pinned_memory.png)
+
+---
+
+![](./images/async_copy.png)
+
+If you fail to this correctly, it will fallback to sync copies (which su_).
+
+It is a bit tricky (and considered advanced).
+
+---
+
+AMD APUs
+
+![](./images/apu.jpg)
+
+---
+
+nVidia NVLink
+
+![](./images/nvlink_cpu.jpg)
+
+---
+
+![](./images/nvlink_gpu.png)
+
+* Power CPUs only at the moment
+ * X86 most likely will never happen
+ * ARM ?
+
+* Promissing for GPU-to-GPU data access
+
+How is it implemented ?
+
+---
+
 ## GPU Programming patterns
 
 * Reduction
@@ -289,23 +396,7 @@ multi kernel
 
 ---
 
-## [DEMO Matrix multiply]
-
----
-
-![](./images/matrix_multiply_static.png)
-
----
-
-![](./images/matrix_multi.gif)
-
----
-
-##[DEMO Matrix Multiply 2]
-
----
-
-#reduction
+# Reduction
 
 
 ```
@@ -316,6 +407,8 @@ float sum(float* data, int n) {
     return result;
 }
 ```
+
+---
 
 ## [DEMO SUM] (using atomic & using shared memory)
 
@@ -329,9 +422,9 @@ Tree-approach
 
 ## [DEMO Block Sum]
 
-O(n) - serial
+`O(n)` - serial
 
-O(n/p + logn) - (p)arallel
+`O(n/p + logn)` - (p)arallel
 
 ---
 
@@ -350,7 +443,7 @@ Variable number of elements per thread ?
 
 ---
 
-## [DEMO inclusive scan]
+## [DEMO Inclusive Scan]
 
 ---
 
@@ -370,7 +463,7 @@ while A is not sorted:
 
 ---
 
-Ranking sort
+Ranking Sort
 
 ```
 rank[i] = count(j < i where A[j] <= A[i]) +
@@ -393,6 +486,15 @@ permute(A[i], A[i - offset[i]))
 
 How many ones/zeros to my left -> prefix sum
 (for zeros invert the values)
+
+---
+
+#Q&A
+
+---
+
+Note:
+Bonus slides in case we have time
 
 ---
 
@@ -424,6 +526,3 @@ Recap
 
 ![](./images/wave_front2.png)
 
----
-
-Q&A

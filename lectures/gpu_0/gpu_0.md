@@ -267,6 +267,8 @@ The GPU has totaly different approach !
 * Function call
 * Code generation
 
+More on this later ...
+
 ---
 
 ##divergence
@@ -285,13 +287,42 @@ void squareEvenOdd(int* a, int count) {
 
 ---
 
+* You don't have to worry about correctness
+* You have to worry about performance
+```
+if (globalID() % 2 == 0)
+    //...
+else
+    //...
+```
+```
+if (globalID() < totalTasks/2)
+    //...
+else
+    //...
+```
+
+---
+
 ![](./images/g8.PNG)
 
 ---
 
+![](./images/divergence1.png)
+
+---
+
+![source cs193 Stanford](./images/divergence2.png)
+
+---
+
+
 ##solutions
 * Ignore
 * Multi kernel
+ * Do 1st half of the work on the GPU
+ * Sort the tasks on the GPU
+ * Do the 2nd half of the work on the GPU
 
 ---
 
@@ -376,6 +407,10 @@ You have to copy that back on forth (memcpy-like)*
 
 ---
 
+![cs193g Stanford](./images/memory_access.png)
+
+---
+
 ![](./images/3.PNG)
 
 ---
@@ -395,6 +430,28 @@ void bar(float fizzBuzz) { // <-
 * Possibly the most valuable resource you have.
 
 ---
+
+What if your program needs more register than the hardware has ?
+* By default, the compiler will try to spill as less as it can
+ * Thus, reducing occupancy
+* Registers are spilled in the global memory. Which register is spilled is unknown for the programmer.
+* The part of global memory used for spill is called **local memory** in CUDA. **local memory** in OpenCL means **shared memory**. Confussion is going to happen.
+
+---
+
+![](./images/keywords.png)
+
+---
+
+How we will cal them: 
+* **Private** or **Register** - when the memory is private and in register
+* **Private** or **Spilled** - when the memory is private and in global
+* **Shared** - when the memory is shared 
+* **Global** - when the memory is global
+* **Constant** - when the memory is constant
+
+---
+
 
 ### Global 
 
@@ -472,6 +529,20 @@ clEnqueueReadBuffer(commands, output, CL_TRUE, 0,
 ```
 
 More code in the next lecture.
+
+---
+
+* You can use pointers, of course.
+* Prefer simple, regular acces patterns. 
+* Avoid pointer chasing.
+* Avoid mixing pointers from different memory types.
+
+---
+
+* Read-only memory -> constant ?
+* Read-write & shared -> shared ?
+* Read-write per thread -> private
+* A lot of memory -> global
 
 ---
 
