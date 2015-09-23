@@ -1,5 +1,7 @@
 #GPGPU
 
+>"If at first you don't succeed, try, try again." The Rescuers (1977)
+
 Note:
 code samples from cs-193-stanford
 
