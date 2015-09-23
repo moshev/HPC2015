@@ -498,8 +498,109 @@ Bonus slides in case we have time
 
 ---
 
+#CUDA THRUST
+
+```
+#include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
+#include <iostream>
+int main(void) { 
+    // H has storage for 4 integers 
+    thrust::host_vector<int> H(4); // initialize individual elements 
+    H[0] = 14; H[1] = 20; H[2] = 38; H[3] = 46;
+    // H.size() returns the size of vector H
+    std::cout << "H has size " << H.size() << std::endl;// print contents of H
+    for(int i = 0; i < H.size(); i++) 
+        std::cout << "H[" << i << "] = " << H[i] << std::endl;
+    H.resize(2); 
+    std::cout << "H now has size " << H.size() << std::endl; 
+    // Copy host_vector H to device_vector D
+    thrust::device_vector<int> D = H;
+    D[0] = 99; D[1] = 88;
+    // print contents of D 
+    for(int i = 0; i < D.size(); i++)
+        std::cout << "D[" << i << "] = " << D[i] << std::endl; // H and D are automatically deleted when the function returns return 0; }
+}
+```
+
+---
+
+Thrust
+
+```
+#include <thrust/sort.h> 
+#include <thrust/functional.h>
+//...
+const int N = 6;
+int A[N] = {1, 4, 2, 8, 5, 7};
+thrust::stable_sort(A, A + N, thrust::greater<int>()); // A is now {8, 7, 5, 4, 2, 1}
+```
+
+Pros: has CPU fallback. Header only.
+
+Cons : CUDA only, needs nvcc to compile.
+
+---
+
+Other:
+* OpenCV, clSPARSE, cl******
+* Video Decoders
+* cuBLAS, cuSPARSE, cuFFT, cuSPARSE, OptiX
+* ArrayFire
+
+---
+
+#Case study - mini GPU raytracer
+
+---
+
+![](./images/raytracing_concept.png)
+
+---
+
+If you want to know more on the topic - "3D графика и трасиране на лъчи", Веселин Георгиев, ФМИ
+
+---
+
+![](./images/vray_portrait.jpg)
+
+---
+
+Do we have embarrassingly parallel problem ?
+
+What are the tasks that we should give to the GPU ?
+
+What are the potentials problems that we should be aware ?
+
+How are we going to implement a random generator ?
+
+---
+
 [DEMO Case study - GPU raytracer]
 ![](./images/raytrace.png)
+
+---
+
+Instead of transfering data back to the CPU and send it again to the GPU to show it on the display, we can do **interop**.
+
+It is like the CUDA program is writing the result directly in the buffer that is shown on the display.
+
+Thus, we spare some transfers.
+
+---
+
+The flow is as follows:
+
+1. Init CUDA & OpenGL APIs.
+2. Send some seeds for the random generator for each ray on the GPU.
+3. Call the "raytrace" kernel. It will trace a ray and store the result in the OpenGL texture. The scene is hard-coded in the GPU source.
+4. Repeat forever.
+
+In case of user input, update the camera position and transfer the new one to the GPU.
+
+It is easier than it sounds. 
+
+[source code examination]
 
 ---
 
