@@ -500,6 +500,33 @@ Bonus slides in case we have time
 
 ---
 
+Dynamic parallelism
+
+![](./images/dynamic_parallelism0.png)
+
+---
+
+![](./images/dynamic_parallelism1.png)
+
+---
+
+![](./images/dynamic_parallelism2.png)
+
+---
+
+With OpenCL 2.X
+
+* Dynamic Parallelism
+
+* Pipes
+
+* Shared Virtual Memory
+
+* Recursion, C++, ...
+
+---
+
+
 #CUDA THRUST
 
 ```
