@@ -39,21 +39,24 @@ namespace Factoriel {
         auto test1 = [&] {
             DISABLE_SIMD_UNROLL
             for(int k=0; k<100; k++) {
-                volatile int r1 = factoriel1(getTestSize());
+                int r1 = factoriel1(getTestSize());
+                escape(&r1);
             }
         };
         
         auto test2 = [&] {
             DISABLE_SIMD_UNROLL
             for(int k=0; k<100; k++) {
-                volatile int r2 = factoriel2(getTestSize());
+                int r2 = factoriel2(getTestSize());
+                escape(&r2);
             }
         };
         
         auto test0 = [&] {
             DISABLE_SIMD_UNROLL
             for(int k=0; k<100; k++) {
-                volatile int r3 = factoriel0(getTestSize());
+                int r3 = factoriel0(getTestSize());
+                escape(&r3);
             }
         };
         ADD_BENCHMARK("Factoriel \t Recursion", test0);

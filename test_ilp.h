@@ -33,7 +33,7 @@ namespace ILP {
         auto test1 = [&]() {
             UNROLL
             for (int i = 0 ; i < getTestSize(); ++i) {
-                float x0 = y * z;
+                const float x0 = y * z;
                 q += z + x0 + x0;
                 x = a + b;
             }
@@ -52,6 +52,7 @@ namespace ILP {
         std::for_each(b.get(), b.get() + getTestSize(), [](float) { return randomFloat();});
         
         auto test0 = [&] {
+            UNROLL
             for (int i = 0; i < getTestSize(); ++i) {
                 a[i] = b[i];
                 b[i] = b[i] + randomFloat();
@@ -59,8 +60,9 @@ namespace ILP {
         };
         
         auto test1 = [&] {
+            UNROLL
             for (int i = 0; i < getTestSize(); ++i) {
-                float temp = b[i];
+                const float temp = b[i];
                 a[i] = temp;
                 b[i] = temp + randomFloat();
             }
@@ -79,14 +81,15 @@ namespace ILP {
         auto test0 = [&]{
             UNROLL
             for (int i = 0; i < getTestSize(); ++i) {
-                z += .5f * (x + y);
-                y += z * (x + y) * 42.f;
+                //sinf might have side effects ...
+                z += .5f * sinf(x + y);
+                y += z * sinf(x + y) * 42.f;
             }
         };
         //
 
         auto test1 = [&] {
-            float temp = x + y;
+            const float temp = sinf(x + y);
             UNROLL
             for (int i = 0; i < getTestSize(); ++i) {
                 z += .5f * temp;
@@ -163,8 +166,8 @@ namespace ILP {
                 v3 = std::max(v3, arr[i + 3]);
             }
             v0 = std::max(v0, v1);
+            v2 = std::max(v2, v3);
             v0 = std::max(v0, v2);
-            v0 = std::max(v0, v3);
         };
         
         

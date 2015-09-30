@@ -35,15 +35,27 @@
 
 #define ADD_BENCHMARK(name, function) { BENCHMARK(name, [&](benchpress::context* ctx) { for (size_t i = 0; i < ctx->num_iterations(); ++i) { function(); } });}
 
-inline float randomFloat() {
+inline auto randomFloat() {
     return float(rand())/RAND_MAX;
 }
-inline int randomInt(int min, int max) {
+inline auto randomInt(int min, int max) {
     return min + (max - min) * randomFloat();
 }
 
 constexpr
-unsigned long long operator"" _million ( const unsigned long long v ) {
-    return v*1000000ULL;
+auto operator"" _million ( const unsigned long long v ) {
+    return v * 1'000'000;
 }
 
+
+inline auto escape(void* ptr) {
+#ifdef __clang__
+    asm volatile("" : : "g"(ptr) : "memory");
+#endif
+}
+
+inline auto clobber() {
+#ifdef __clang__
+    asm volatile("" : : : "memory");
+#endif
+}

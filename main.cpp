@@ -23,8 +23,9 @@ benchpress::registration* benchpress::registration::d_this;
 
 using namespace std;
 int main(int argc, const char * argv[]) {
+
     std::cout << "Starting tests ...\n" << std::endl;
- 
+    
     auto t0 = getTime();
     /* #0 Instruction level parallelism*/
     ILP::test();
