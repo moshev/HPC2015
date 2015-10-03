@@ -27,7 +27,13 @@
    * Data-oriented design (2)
    * Garbage collection
 4. SIMD (2)
-   * auto vectorization
+   * what is SIMD and why is it important
+   * vertical vs horizontal operations
+   * x86_64 SIMD
+   * ARMv8 SIMD
+   * SIMD intrinsics
+   * auto-vectorization
+   * SIMD-ification of some classic problems
 5. Roof line (1)
 6. Multithreading
    * Hardware 
