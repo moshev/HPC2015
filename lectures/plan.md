@@ -32,6 +32,7 @@
    * x86_64 SIMD
    * ARMv8 SIMD
    * SIMD intrinsics
+   * generic vectors
    * auto-vectorization
    * SIMD-ification of some classic problems
 5. Roof line (1)
