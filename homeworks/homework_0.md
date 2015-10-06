@@ -46,18 +46,7 @@ for (int i = 0; i <size; ++i)
 
 ---
 
-```
-int size = 10;
-Sequence s(size);
-s.erase(--size);
-s.erase(0);
-s.erase(--size);
-s.erase(0);
-for (int i = 0; i <size - 2; ++i)
-printf("%i \n", s.get(i)); //prints 2, 3, 4, 5, 6, 7,
 
-
-```
 
 ---
 
