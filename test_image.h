@@ -2,6 +2,8 @@
 
 #include "simd/simd.h"
 
+#define QUIRK_001	(__AVX__ == 1) // glibc/compiler bug: memory allocated via operator new may not be suitably aligned for the requested type, e.g. 32B alignment for embree::avxf
+
 namespace Image {
     using std::pow;
     embree::ssef exp(const embree::ssef& s) {
@@ -101,16 +103,45 @@ namespace Image {
         return f;
     }
 #endif
-     
+
     template <typename T>
     struct Image {
         int width, height, colorSpace, flags;
         float gamma, colorMult;
-        std::unique_ptr<T[]> colors;
+
+#if QUIRK_001
+		struct Deleter {
+			Deleter()
+			: ptr(0) {
+			}
+
+			void operator ()(void*) const {
+				free(ptr);
+			}
+
+			void* ptr;
+		};
+
+		std::unique_ptr< T[], Deleter > colors;
+#else
+		std::unique_ptr< T[] > colors;
+
+#endif
         Image(int w, int h) {
-            width = w;
-            height = h / T::size;
-            colors.reset(new T[width * height]);
+			width = w;
+			height = h / T::size;
+
+#if QUIRK_001
+			const size_t alignment = sizeof(T);
+			void* raw = malloc(sizeof(T) * width * height + alignment - 1);
+			void* aligned = (void*)(uintptr_t(raw) + alignment - 1 & ~uintptr_t(alignment - 1));
+			colors.reset(new (aligned) T[width * height]);
+			colors.get_deleter().ptr = raw;
+
+#else
+			colors.reset(new T[width * height]);
+
+#endif
             gamma = randomFloat();
             colorMult = randomFloat();
             colorSpace = randomInt(0, 2);
