@@ -61,7 +61,7 @@ printf("%i \n", s.get(i)); //prints 2, 3, 4, 5, 6, 7,
 
 ---
 
-Решенията изпращайте на taskov ет gmail точка com
+Решенията изпращайте на blagovestt ет uni-sofia точка bg
 
 Заглавие `HPC FMI 44286 HOMEWORK 0`, където 44286 е факултетният ви номер
 
