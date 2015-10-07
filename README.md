@@ -1,6 +1,8 @@
 # HPC FMI 2015
 
 "Високо производително програмиране", ФМИ, СУ, зимен семестър, 2015.
+
+<img src="https://github.com/savage309/HPC2015/raw/master/lectures/00/images/hpc_fmi_logo.jpg"/>
 ___
 # Кога ?
 
