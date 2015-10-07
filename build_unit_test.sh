@@ -16,6 +16,6 @@ SRC=(
 	test_pointer_alias/test_pointer_alias.cpp
 	test_pointer_alias/test_pointer_alias_impl.cpp
 )
-BUILD_CMD=${CXX}" "${SRC[@]}" -std=c++14 -I. -lpthread -O3 -DCXXOPTS_NO_RTTI -fno-rtti -fstrict-aliasing -ffast-math -march=native -mtune=native"
+BUILD_CMD=${CXX}" "${SRC[@]}" -std=c++14 -I. -lpthread -O3 -DCXXOPTS_NO_RTTI -fno-rtti -fstrict-aliasing -ffast-math -march=native -mtune=native -DQUIRK_001"
 echo $BUILD_CMD
 $BUILD_CMD

@@ -32,6 +32,41 @@
 /* include AVX wrapper classes */
 #if defined(__AVX__)
 #include "simd/avx.h"
+
+#if QUIRK_001
+// glibc/compiler bug: memory allocated via operator new may not be suitably aligned for the requested type, e.g. 32B alignment for embree::avxf
+
+#include <stdlib.h>
+
+	class embree_avxf : public embree::avxf {
+	public:
+		embree_avxf() {}
+
+		embree_avxf(const embree::avxf& src)
+		: embree::avxf(src) {
+		}
+
+		static void* operator new(size_t size) noexcept {
+			void *ptr;
+			if (0 == posix_memalign(&ptr, sizeof(embree_avxf), size))
+				return ptr;
+
+			return 0;
+		}
+
+		static void* operator new[](size_t size) noexcept {
+			void *ptr;
+			if (0 == posix_memalign(&ptr, sizeof(embree_avxf), size))
+				return ptr;
+
+			return 0;
+		}
+	};
+
+#else
+	typedef embree::avxf embree_avxf;
+
+#endif
 #endif
 
 #if defined (__AVX__)

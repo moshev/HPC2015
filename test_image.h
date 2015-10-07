@@ -2,39 +2,7 @@
 
 #include "simd/simd.h"
 
-#define QUIRK_001	(__AVX__ == 1) // glibc/compiler bug: memory allocated via operator new may not be suitably aligned for the requested type, e.g. 32B alignment for embree::avxf
-
 namespace Image {
-#if QUIRK_001
-	class embree_avxf : public embree::avxf {
-	public:
-		embree_avxf() {}
-
-		embree_avxf(const embree::avxf& src)
-		: embree::avxf(src) {
-		}
-
-		static void* operator new(size_t size) noexcept {
-			void *ptr;
-			if (0 == posix_memalign(&ptr, sizeof(embree_avxf), size))
-				return ptr;
-
-			return 0;
-		}
-
-		static void* operator new[](size_t size) noexcept {
-			void *ptr;
-			if (0 == posix_memalign(&ptr, sizeof(embree_avxf), size))
-				return ptr;
-
-			return 0;
-		}
-	};
-
-#else
-	typedef embree::avxf embree_avxf;
-
-#endif
     using std::pow;
     embree::ssef exp(const embree::ssef& s) {
         embree::ssef res;

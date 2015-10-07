@@ -70,16 +70,16 @@ namespace PointerAlias {
             a[i] = i; b[i] = i * 2; res[i] = i * 3;
         }
 #if (defined  __AVX__)
-        std::unique_ptr<embree::avxf[]> avxA(new embree::avxf[getTestSize()/embree::avxf::size]);
-        std::unique_ptr<embree::avxf[]> avxB(new embree::avxf[getTestSize()/embree::avxf::size]);
-        std::unique_ptr<embree::avxf[]> avxRes(new embree::avxf[getTestSize()/embree::avxf::size]);
+        std::unique_ptr<embree_avxf[]> avxA(new embree_avxf[getTestSize()/embree::avxf::size]);
+        std::unique_ptr<embree_avxf[]> avxB(new embree_avxf[getTestSize()/embree::avxf::size]);
+        std::unique_ptr<embree_avxf[]> avxRes(new embree_avxf[getTestSize()/embree::avxf::size]);
         
         for (int i = 0; i < getTestSize(); i+=embree::avxf::size) {
             avxA[i/embree::avxf::size].load(a.get()+i);
             avxB[i/embree::avxf::size].load(b.get()+i);
             avxRes[i/embree::avxf::size].load(res.get()+i);
         }
-        
+
         auto test5 = [&] {
             PointerAlias::pointerSIMD<embree::avxf>(avxA.get(), avxB.get(), avxRes.get(), POINTER_ALIAS_TEST_SIZE/embree::avxf::size);
         };
