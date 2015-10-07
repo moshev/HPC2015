@@ -2,6 +2,7 @@
 #include <cmath>
 #include <memory>
 #include <mutex>
+#include <stdlib.h>
 
 #include <algorithm>
 

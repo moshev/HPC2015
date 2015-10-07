@@ -5,6 +5,36 @@
 #define QUIRK_001	(__AVX__ == 1) // glibc/compiler bug: memory allocated via operator new may not be suitably aligned for the requested type, e.g. 32B alignment for embree::avxf
 
 namespace Image {
+#if QUIRK_001
+	class embree_avxf : public embree::avxf {
+	public:
+		embree_avxf() {}
+
+		embree_avxf(const embree::avxf& src)
+		: embree::avxf(src) {
+		}
+
+		static void* operator new(size_t size) noexcept {
+			void *ptr;
+			if (0 == posix_memalign(&ptr, sizeof(embree_avxf), size))
+				return ptr;
+
+			return 0;
+		}
+
+		static void* operator new[](size_t size) noexcept {
+			void *ptr;
+			if (0 == posix_memalign(&ptr, sizeof(embree_avxf), size))
+				return ptr;
+
+			return 0;
+		}
+	};
+
+#else
+	typedef embree::avxf embree_avxf;
+
+#endif
     using std::pow;
     embree::ssef exp(const embree::ssef& s) {
         embree::ssef res;
@@ -98,7 +128,7 @@ namespace Image {
     }
 #ifdef __AVX__
     template <>
-    embree::avxf randomColor<embree::avxf>() {
+    embree_avxf randomColor<embree_avxf>() {
         embree::avxf f(42.f);
         return f;
     }
@@ -108,40 +138,12 @@ namespace Image {
     struct Image {
         int width, height, colorSpace, flags;
         float gamma, colorMult;
-
-#if QUIRK_001
-		struct Deleter {
-			Deleter()
-			: ptr(0) {
-			}
-
-			void operator ()(void*) const {
-				free(ptr);
-			}
-
-			void* ptr;
-		};
-
-		std::unique_ptr< T[], Deleter > colors;
-#else
 		std::unique_ptr< T[] > colors;
 
-#endif
         Image(int w, int h) {
 			width = w;
 			height = h / T::size;
-
-#if QUIRK_001
-			const size_t alignment = sizeof(T);
-			void* raw = malloc(sizeof(T) * width * height + alignment - 1);
-			void* aligned = (void*)(uintptr_t(raw) + alignment - 1 & ~uintptr_t(alignment - 1));
-			colors.reset(new (aligned) T[width * height]);
-			colors.get_deleter().ptr = raw;
-
-#else
 			colors.reset(new T[width * height]);
-
-#endif
             gamma = randomFloat();
             colorMult = randomFloat();
             colorSpace = randomInt(0, 2);
@@ -162,7 +164,7 @@ namespace Image {
         Image<Float> img(SIZE, SIZE);
         Image<embree::ssef> img2(SIZE, SIZE);
 #ifdef __AVX__
-        Image<embree::avxf> img3(SIZE, SIZE);
+        Image<embree_avxf> img3(SIZE, SIZE);
 #endif
         Float blendColor = randomColor<Float>();
         float blend = randomFloat();
@@ -213,7 +215,7 @@ namespace Image {
             for (int i = 0; i < img3.width; ++i) {
                 DISABLE_SIMD_UNROLL
                 for (int j = 0; j < img3.height / embree::avxf::size; ++j) {
-                   resAVX += apply(img3.flags, img3.gamma, img3.colorSpace, img3.colors[i + img3.width*j], blendColor3, img3.colorMult, blend);
+                   resAVX += apply(img3.flags, img3.gamma, img3.colorSpace, static_cast< const embree::avxf& >(img3.colors[i + img3.width*j]), blendColor3, img3.colorMult, blend);
                 }
             }
         };
