@@ -14,13 +14,70 @@ var mkdirp = require('mkdirp');
 //to check the OS (we enable sandboxing if this is OS X 10.9 or newer)
 var os = require('os');
 
+//how many times to run each homework. 10 is default, second cmd arg can change that ("sudo node homework 1 100" will run homework 1, 100 times for each student
+var NUM_RUNS = 10;
+
+var args = process.argv;
+for (var i = 0; i < args.length; ++i) {
+    var arg = args[i];
+    if (arg.indexOf("help")>-1) {
+        log("\nHOMEWORK.JS is project for automatic homework check, in-house made for Sofia University, FMI, HPC 2015 course\n\
+            Here is a simple how-to:\n\
+            1. In a folder named ./data you should create 1 folder for each homework assignemnt, named 0, 1, 2, ...\n\
+            2. In each of these homework assignemnt folders, you should make folder for each student, which name is the faculty number of the student\n\
+            3. In each of these student folders, there should be one .cpp file, that contains the student solution (name of the file doesn't matter, main.cpp is a good name\n\
+            4. You should know what is the type of source in those .cpp files. Let say the students had to imeplement function named `fizzBuzz()`\n\
+            5. In ./solution<HOMEWORK_NUMBER>.cpp you should have int main() function, that does whatever checks are needed (like, call fizzBuzz and see if the reuslt is as expected). If any of the checks fails, you sould print \"BAD\" and you should call exit(1)\n\
+            6. This script will append ./solution<HOMEWORK_NUMBER>.cpp source to the source of each student and will make sure to remove any int main() function that they might have added. It will compile and check if the results were okay and it will report how long it took\n\
+            7. This files should be called with `sudo node homework.js <HOMEWORK_NUMBER> <NUMBER_OF_TIME_TO_RUN_EACH_STUDENT_HOMEWORK>. The second arg is optional, with default value = " + NUM_RUNS + ". This script is tested on OS X only.");
+        
+        process.exit(1)
+    }
+}
+
+//the index of the homework, that we will test
+var HOMEWORK_NUMBER;
+
+//fetching args is lame, but it is what it is
+HOMEWORK_NUMBER = args[2];
+if (isNaN(HOMEWORK_NUMBER)) {
+    log("First arg should be the homework number, got " + HOMEWORK_NUMBER + " instead. This is an error");
+    process.exit(1);
+}
+HOMEWORK_NUMBER = parseFloat(HOMEWORK_NUMBER);
+if (HOMEWORK_NUMBER <= 0) {
+    log("Homework number should be >= 0, got:" + HOMEWORK_NUMBER + " instead. This is an error");
+    proces.exit(1);
+}
+
+
+if (args.length > 3) {
+    var tempNumRuns = args[3];
+    if (isNaN(tempNumRuns) == false) {
+        NUM_RUNS = parseFloat(tempNumRuns);
+        if (NUM_RUNS <= 0) {
+            log("Second arg that tells how many times to run each test is " + NUM_RUNS + " which is <= 0. This is an error. Script will abort. Please enter something >= 0 ");
+            process.exit(1);
+        }
+    }
+}
+log("Will run each test for " + tempNumRuns + " times")
+
+log("******************* Starting homework #" + HOMEWORK_NUMBER + " *******************");
+
+var SOLUTIONS_FOLDER = './data/' + HOMEWORK_NUMBER;
+
+var walk    = require('walk');
 //****************************************************************************************************************
 
 //this will be used to invoke a compiler
 //if you don't have clang++, you wil have to modify that
-var COMPILER_START_COMMAND = 'clang++ -Xclang -std=c++11 -stdlib=libc++ -lpthread';
+var COMPILER_START_COMMAND = 'clang++ -Xclang -std=c++14 -O3 -stdlib=libc++ -lpthread';
 
 var USE_SANDBOXING = (os.platform()=="darwin") && parseFloat(os.release()) >= 15;
+
+checkUserDirExists("./data");
+checkUserDirExists(SOLUTIONS_FOLDER);
 
 if (USE_SANDBOXING) {
     log("Sandboxing is supported and will be used");
@@ -33,11 +90,11 @@ if (USE_SANDBOXING) {
 //if it not exists there, it will be created. In this folder the script will create a folder for each student id.
 //In each student id folders, there will be a file named 'sandbox', that has the sandbox configuration for that folder and a folder for each homework.
 //In each homework folder, there will be a HOMEWORK_EXECUTABLE_NAME.cpp file (containing the source), HOMEWORK_EXECUTABLE_NAME.bin (containing the executable) and results.txt (containing part of the log that this scripts prints).
-var HOMEWORK_FOLDER = "homeworks_main";
+var HOMEWORK_FOLDER = "homework_js_temp_folder";
 
 //maximum amount of runtime for each homework
 //the same amount is used as max amount of time for clang during homework compilation
-var MAX_RUNTIME_MS = 10000;
+var MAX_RUNTIME_MS = 42000;
 
 //the name of the temp file that will be created to hold each of the students homework
 //it is good to have some random name, since later we will use "pkill -9 HOMEWORK_EXECUTABLE_NAME" in case execution takes too long
@@ -143,6 +200,15 @@ var RES_CANT_WRITE_FILE = 2; //some of the temp files that we had to create fail
 var RES_COMPILE_ERROR = 3; //the source did not compile
 var RES_TIMEOUT_ERROR = 4; //compilation or execution took too long (> MAX_RUNTIME_MS)
 
+function resToString(res) {
+    if (res == RES_OKAY) return "Okay";
+    if (res == RES_INVALID) return "RES_INVALID";
+    if (res == RES_CANT_WRITE_FILE) return "RES_CANT_WRITE_FILE";
+    if (res == RES_COMPILE_ERROR) return "RES_COMPILE_ERROR";
+    if (res == RES_TIMEOUT_ERROR) return "RES_TIMEOUT_ERROR";
+    else return "UNKOWN RESULT TYPE";
+}
+
 //return the folder that holds all the homeworks for the student 'id'
 function getUserFolder(id) {
     id = parseFloat(id);
@@ -161,7 +227,7 @@ function getUserHomeworkFolder(id, homeworkNumber) {
 //txt is string explaining why this result happened
 //if res==RES_OKAY, "txt" will have the number of tests that passed successfuly.
 //ideally should be split in more functions
-function homework(userid, homeworkNumber, tests, source) {
+function homework(userid, homeworkNumber, source) {
     
     //there is folder that contains the homeworks of all students named HOMEWORK_FOLDER
     //first we assert that such folder exists
@@ -220,7 +286,7 @@ function homework(userid, homeworkNumber, tests, source) {
     
     //limit the executable file resources (time & memory)
     var processOptions  = { encoding: 'utf8',
-            timeout: 10,
+            timeout: 50,
             maxBuffer: 200*1024,
             killSignal: 'SIGTERM',
             cwd: null,
@@ -246,18 +312,16 @@ function homework(userid, homeworkNumber, tests, source) {
     
     var numTestsPassed = 0;
     log("homeworkFolder " + homeworkFolder);
+    var timeTaken = 0;
+
     //loop through the test cases and compare the results
-    for (var i = 0; i < tests.length; ++i) {
-        
-        //fetch the input params
-        var input = tests[i].input.trim();
-        
+    for (var i = 0; i < NUM_RUNS; ++i) {
         var timeMs = 0;
         try {
              //execute the compiled binary
             var execCommand = "";
             if (USE_SANDBOXING) {
-                 execCommand = "sudo sandbox-exec -f " + userFolder + "/sandbox " + outFile + " " + input;
+                 execCommand = "sudo sandbox-exec -f " + userFolder + "/sandbox " + outFile;
             } else {
                  execCommand = "./" + outFile + " " + input;
             }
@@ -277,75 +341,96 @@ function homework(userid, homeworkNumber, tests, source) {
         
         //check how much time the executable was running
         var diff = process.hrtime(timeMs);
-        timeTaken = (diff[0] * 1e9 + diff[1]) / 1000000;
+        timeTaken += (diff[0] * 1e9 + diff[1]) / 1000000;
         
         //get how much time it is allowed to take
-        var timeMax = parseFloat(tests[i].time.trim());
+        //var timeMax = parseFloat(tests[i].time.trim());
         //fetch the student result & the needed result
         
         var homeworkResult = chModResult.stdout.toString().trim();
-        var output = tests[i].output.trim();
-        log(outFile + " result stdout=\'" + chModResult.stdout + "' stderr='" + chModResult.stderr + ", time:" + timeTaken + "'");
-        
-        //check if the result is correct
-        if (output == homeworkResult) {
-            
-            //and within time limit
-            if (timeTaken > timeMax) {
-                log("Test " + i + " for id " + id + " FAILED (TIME OUT)");
-            } else {
-                log("Test " + i + " for id " + id + " OKAY (" + output + " == " + homeworkResult + ")");
-                numTestsPassed++;
-            }
-        } else {
-            log("Test " + i + " for id " + id + " FAILED (" + output + " != " + homeworkResult + ")");
-        }
-        
-    }
     
+        if (homeworkResult.indexOf("BAD") >  -1) {
+            return {"result":RES_INVALID, "txt":"bad result"};
+        }
+        //var output = tests[i].output.trim();
+        log(outFile + " result stdout=\'" + chModResult.stdout + "' stderr='" + chModResult.stderr + ", time:" + timeTaken + "'");
+    }
     //*************************************************************************
     //Hopefully nobody hacked us and we can return the result
     
-    return {"result" : result, "txt" : numTestsPassed.toString()};
+    return {"result" : result, "txt":timeTaken/NUM_RUNS};
 }
 
-function sampleUsage() {
-    var testSuite = [{input:"0 2 0", output:"1 1 1", time:"300"},
-                     {input:"1 0 0", output:"1 2 1 ", time:"1000"},
-                     {input:"0 0 3", output:"3 1 1 ", time:"2000"}];
-    
-    for (var i = 0; i < 11; ++i) {
-        for (var j = 0; j < 5; ++j) {
-            var studentId = 44286+i;
-            var homeworkNumber = j;
-            var source = '#include <vector>\n#include <unistd.h>\n#include <stdio.h>\n#include <iostream>\n int main(int argc, const char* argv[]){std::vector<int> v;printf("1 1 1");}';
-            
-            //******************************************
-            var res = homework(studentId.toString(), //*
-                               homeworkNumber,       //*
-                               testSuite,            //*
-                               source);              //*
-            //******************************************
 
-            var resultMessage = ""
-            if (res.result == RES_OKAY) {
-                resultMessage = "****** Tests for homework#" + homeworkNumber + ", studendId " + studentId + ". Passed " + res.txt + " out of " + testSuite.length + " tests.***";
-            } else {
-                resultMessage = "****** Tests for homework#" + homeworkNumber + ", studendId " + studentId + ". Failed, reason: [" + res.txt + "]";
-            }
-            
-            log(resultMessage);
-            
-            var resultFile = getUserHomeworkFolder(studentId, homeworkNumber) + "/result.txt";
-            removeFile(resultFile);
-            try {
-                fs.writeFileSync(resultFile, resultMessage);
-            } catch(e) {
-                log("Can't create result file " + resultFile);
-            }
+//walk on all the files with student solutions and get the paths to them
+var walker  = walk.walk(SOLUTIONS_FOLDER, { followLinks: false });
+
+//stores paths to the .cpp files with the student solutions
+var files   = [];
+
+walker.on('file', function(root, stat, next) {
+          // Add this file to the list of files
+          if (stat.name.indexOf(".DS") < 0)
+              files.push(root + '/' + stat.name);
+          next();
+});
+
+//search for the `teacher` solution against which student ones will be tested
+var pathToSolution = "./solution" + HOMEWORK_NUMBER.toString() + ".cpp";
+log("Searching for solution in " + pathToSolution);
+var baseSolution = "";
+try {
+    baseSolution = fs.readFileSync(pathToSolution).toString();
+} catch (e) {
+    log("Error loading solution file " + pathToSolution + ". Script will abort");
+    process.exit(1);
+}
+
+//sorts array by key
+function sortByKey(array, key) {
+    return array.sort(function(a, b) {
+                      var x = a[key]; var y = b[key];
+                      return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+                      });
+}
+
+//go through each .cpp file, compile, run, check for invalid result (f.e. if "BAD" will be printed or if it will crash / hang / etc) and report times
+walker.on('end', function() {
+  var runString = "run";
+  if (NUM_RUNS > 1) runString = "runs";
+  var messages = "\n\n\n ******************* RESULTS (" + NUM_RUNS + " " + runString + ") *******************\n";
+
+    var results = [];
+    for (var i = 0; i < files.length; ++i) {
+        try {
+
+            var path = files[i];
+            var fnum = path.substring(SOLUTIONS_FOLDER.length + 1, path.length);
+            var id = parseFloat(fnum);
+            var src = fs.readFileSync(path).toString();
+
+            src.replace(" main", " main2");
+            src += baseSolution;
+
+            log("\n\n **** Testing solution of student " + id + " ****")
+
+            var res = homework(id, HOMEWORK_NUMBER, src);
+
+            results.push( {"result":resToString(res.result), "avgTime":res.txt, "facultyNumber":id} );
+
+            //messages += ("Faculty number: "  + id + ", result:" + resToString(res.result) + ", avg time:" + res.txt) + '\n';
+        } catch(e) {
+            messages += ("Error executing: " + id + " " + e) + '\n';
         }
     }
-   
-}
+          
+    sortByKey(results, "avgTime");
 
-sampleUsage();
+    for (var i = 0; i < results.length; ++i) {
+        var result = results[i];
+        messages += "Faculty number: " + result.facultyNumber + ", result:" + result.result + ", avg time:" + result.avgTime + "\n";
+    }
+          
+    log(messages);
+
+});
