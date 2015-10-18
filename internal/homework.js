@@ -409,7 +409,8 @@ walker.on('end', function() {
             var id = parseFloat(fnum);
             var src = fs.readFileSync(path).toString();
 
-            src.replace(" main", " main2");
+            src = src.split(" main(").join(" _3bb005aa__fmi_hpc_2015_main2_invalidated__(");
+
             src += baseSolution;
 
             log("\n\n **** Testing solution of student " + id + " ****")
@@ -418,8 +419,7 @@ walker.on('end', function() {
 
             results.push( {"result":resToString(res.result), "avgTime":res.txt, "facultyNumber":id} );
 
-            //messages += ("Faculty number: "  + id + ", result:" + resToString(res.result) + ", avg time:" + res.txt) + '\n';
-        } catch(e) {
+          } catch(e) {
             messages += ("Error executing: " + id + " " + e) + '\n';
         }
     }
