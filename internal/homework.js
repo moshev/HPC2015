@@ -1,5 +1,4 @@
 // Simple node js script that can be used to compile, run and evaluate the result of C++ files
-// Check sampleUsage() at the end of the file for example usage
 
 // The tools is designed to be minimalistic and simple. In spite of that it achieves some levels
 // of security by sandboxing the compiled C++ files and by limiting the time they have to compile and execute. The sandboxing works in OS X only for the moment.
@@ -222,9 +221,9 @@ function getUserHomeworkFolder(id, homeworkNumber) {
 }
 
 //does the main work
-//accepts userid:String, homeworkNumber:Integer, Tests:[{input:"string", output:"string", time:Number},...] and source:String.
+//accepts userid:String, homeworkNumber:Integer and source:String.
 //returns {res: RES_X, txt:"string"} RES_X is any of the RES_ numbers defined above
-//txt is string explaining why this result happened
+//txt is string explaining why this result happened. If it is a number, it is the time that was spend running the test.
 //if res==RES_OKAY, "txt" will have the number of tests that passed successfuly.
 //ideally should be split in more functions
 function homework(userid, homeworkNumber, source) {
