@@ -13,8 +13,14 @@ var mkdirp = require('mkdirp');
 //to check the OS (we enable sandboxing if this is OS X 10.9 or newer)
 var os = require('os');
 
+//the index of the homework, that we will test
+var HOMEWORK_NUMBER = 0; //
+var NUM_RUNS = 10; //
+var SORT_BY = "time";
+var STUDENT_IDS = [];
+var cmdArgs = []
+
 //how many times to run each homework. 10 is default, second cmd arg can change that ("sudo node homework 1 100" will run homework 1, 100 times for each student
-var NUM_RUNS = 10;
 
 var args = process.argv;
 for (var i = 0; i < args.length; ++i) {
@@ -22,45 +28,86 @@ for (var i = 0; i < args.length; ++i) {
     if (arg.indexOf("help")>-1) {
         log("\nHOMEWORK.JS is project for automatic homework check, in-house made for Sofia University, FMI, HPC 2015 course\n\
             Here is a simple how-to:\n\
-            1. In a folder named ./data you should create 1 folder for each homework assignemnt, named 0, 1, 2, ...\n\
+            1. In a folder named ./data you should create 1 folder for each homework assignemnt, named 0, 1, 2, .... Default is " + "\n\
             2. In each of these homework assignemnt folders, you should make folder for each student, which name is the faculty number of the student\n\
             3. In each of these student folders, there should be one .cpp file, that contains the student solution (name of the file doesn't matter, main.cpp is a good name\n\
             4. You should know what is the type of source in those .cpp files. Let say the students had to imeplement function named `fizzBuzz()`\n\
-            5. In ./solution<HOMEWORK_NUMBER>.cpp you should have int main() function, that does whatever checks are needed (like, call fizzBuzz and see if the reuslt is as expected). If any of the checks fails, you sould print \"BAD\" and you should call exit(1)\n\
+            5. In ./solution<HOMEWORK_NUMBER>.cpp you should have int main() function, that does whatever checks are needed (like, call fizzBuzz and see if the reuslt is as expected). If any of the checks fails, you sould print call 'exit' with value >0 and you should call exit(1)\n\
             6. This script will append ./solution<HOMEWORK_NUMBER>.cpp source to the source of each student and will make sure to remove any int main() function that they might have added. It will compile and check if the results were okay and it will report how long it took\n\
-            7. This files should be called with `sudo node homework.js <HOMEWORK_NUMBER> <NUMBER_OF_TIME_TO_RUN_EACH_STUDENT_HOMEWORK>. The second arg is optional, with default value = " + NUM_RUNS + ". This script is tested on OS X only.");
+            7. Params with which you can/should call this scirpt:\n\
+            -n <number> Number, the ID of the homework, that should be test.\n\
+            -samples -s Number, how many times to run each homework.\n\
+            -sort String - 'time' or 'student'. This changes on what the results will be sorted.\n\
+            -ids List of number <number>,<number>,...,<number>. Faculty numbers which should be tested. If there is no such param, all found faculty nubmers will be tested.\n\
+            -help This help.");
         
         process.exit(1)
     }
 }
 
-//the index of the homework, that we will test
-var HOMEWORK_NUMBER;
 
-//fetching args is lame, but it is what it is
-HOMEWORK_NUMBER = args[2];
-if (isNaN(HOMEWORK_NUMBER)) {
-    log("First arg should be the homework number, got " + HOMEWORK_NUMBER + " instead. This is an error");
-    process.exit(1);
-}
-HOMEWORK_NUMBER = parseFloat(HOMEWORK_NUMBER);
-if (HOMEWORK_NUMBER <= 0) {
-    log("Homework number should be >= 0, got:" + HOMEWORK_NUMBER + " instead. This is an error");
-    proces.exit(1);
+
+if (args.length % 2) {
+    log("Error: wrong number of arguments. Check --help")
+    process.exit(1)
 }
 
+for (var i = 2; i < args.length; i += 2) {
+    cmdArgs.push({"name":args[i], "value":args[i+1]});
+}
 
-if (args.length > 3) {
-    var tempNumRuns = args[3];
-    if (isNaN(tempNumRuns) == false) {
-        NUM_RUNS = parseFloat(tempNumRuns);
-        if (NUM_RUNS <= 0) {
-            log("Second arg that tells how many times to run each test is " + NUM_RUNS + " which is <= 0. This is an error. Script will abort. Please enter something >= 0 ");
+for (var i = 0; i < cmdArgs.length; ++i) {
+    var name = cmdArgs[i].name;
+    var value = cmdArgs[i].value;
+    switch(name) {
+            case "-n":
+            if (!isNumeric(value)) {
+                log("Error: homework number should be a number");
+                process.exit(1);
+            }
+            HOMEWORK_NUMBER = parseFloat(value);
+            break;
+            case "-samples":
+            case "-s":
+            if (!isNumeric(value)) {
+                log("Error: samples count should be a number");
+                process.exit(1);
+            }
+            NUM_RUNS = parseFloat(value);
+            break;
+            case "-sort":
+            if (value.toString() != "student" && value.toString() != "time") {
+                log("Error: sort by can have value 'student' or 'time', got " + value);
+                process.exit(1)
+            }
+            SORT_BY = value;
+            break;
+            case "-ids":
+            
+            var ids = value.split(",");
+            for (var n = 0; n < ids.length; ++n) {
+                var id = ids[n];
+                if (isNumeric(id)) {
+                    STUDENT_IDS.push(parseFloat(id));
+                } else {
+                    log("Warning: got " + id + " as student id to test, but this is not a number");
+                }
+            }
+            
+            break
+        default:
+            log("Error: unknown param " + name);
             process.exit(1);
-        }
     }
 }
-log("Will run each test for " + tempNumRuns + " times")
+
+log("Will start homework# " + HOMEWORK_NUMBER);
+log("Will run each homework for " + NUM_RUNS + " time(s)");
+log("Will sort result by " + SORT_BY);
+
+if (STUDENT_IDS.length) {
+    log("Will test only for student ids " + STUDENT_IDS);
+}
 
 log("******************* Starting homework #" + HOMEWORK_NUMBER + " *******************");
 
@@ -220,6 +267,10 @@ function getUserHomeworkFolder(id, homeworkNumber) {
     return HOMEWORK_FOLDER + "/" + id + "/" + homeworkNumber.toString();
 }
 
+var OKAY = 0;
+var FLOAT_ERR = 1;
+var INCORRECT = 2;
+
 //does the main work
 //accepts userid:String, homeworkNumber:Integer and source:String.
 //returns {res: RES_X, txt:"string"} RES_X is any of the RES_ numbers defined above
@@ -242,7 +293,7 @@ function homework(userid, homeworkNumber, source) {
     }
 
     if (result != RES_OKAY)
-        return {"result" : result, "txt" : "Invalid user id"};
+        return {"result" : result, "time" : -1, "str" : "Invalid user id"};
     
     //this should be number now
     id = parseFloat(userid);
@@ -272,7 +323,7 @@ function homework(userid, homeworkNumber, source) {
     try {
         fs.writeFileSync(homeworkFile, source);
     } catch(e) {
-        return {"result" : RES_CANT_WRITE_FILE, "txt" :  "Can not create file"};
+        return {"result" : RES_CANT_WRITE_FILE, "time" : -1, "str": "Can not create file"};
     }
     
     //get path to the executable
@@ -297,13 +348,13 @@ function homework(userid, homeworkNumber, source) {
         var compileResult = execSync(COMPILER_START_COMMAND + ' ' + homeworkFile + " -o " + outFile, MAX_RUNTIME_MS);
     } catch (e) {
         result = RES_COMPILE_ERROR;
-        return {"result" : result, "txt" : e.toString()};
+        return {"result" : result, "time" :-1, "str": e.toString()};
     }
     
     //check if the compilation is okay
     if (compileResult.stderr) {
         result = RES_COMPILE_ERROR;
-        return {"result" : result, "txt" : compileResult.stderr.toString()}
+        return {"result" : result, "time" : -1, "str" :compileResult.stderr.toString()}
     }
     
     //*************************************************************************
@@ -335,29 +386,23 @@ function homework(userid, homeworkNumber, source) {
                 execSync("sudo pkill -9 " + HOMEWORK_EXECUTABLE_NAME + ".bin")
             }
             
-            return {"result":RES_TIMEOUT_ERROR, "txt":"Time out error"};
+            return {"result":RES_TIMEOUT_ERROR, "time": -1, "str":"Time out error"};
         }
         
         //check how much time the executable was running
         var diff = process.hrtime(timeMs);
         timeTaken += (diff[0] * 1e9 + diff[1]) / 1000000;
         
-        //get how much time it is allowed to take
-        //var timeMax = parseFloat(tests[i].time.trim());
-        //fetch the student result & the needed result
-        
-        var homeworkResult = chModResult.stdout.toString().trim();
-    
-        if (homeworkResult.indexOf("BAD") >  -1) {
-            return {"result":RES_INVALID, "txt":"bad result"};
+        var homeworkResult = chModResult.stdout.toString();
+        if (chModResult.status != 0) {
+            return {"result":RES_INVALID, "time":999999, "str":"Invalid result " + homeworkResult + " ,status: " + chModResult.status};
         }
-        //var output = tests[i].output.trim();
-        log(outFile + " result stdout=\'" + chModResult.stdout + "' stderr='" + chModResult.stderr + ", time:" + timeTaken + "'");
+       log(outFile + " result stdout=\'" + chModResult.stdout + "' stderr='" + chModResult.stderr + ", time:" + timeTaken + "'");
     }
     //*************************************************************************
     //Hopefully nobody hacked us and we can return the result
     
-    return {"result" : result, "txt":timeTaken/NUM_RUNS};
+    return {"result" : result, "time":timeTaken/NUM_RUNS, "str": "Correct " + homeworkResult};
 }
 
 
@@ -369,7 +414,7 @@ var files   = [];
 
 walker.on('file', function(root, stat, next) {
           // Add this file to the list of files
-          if (stat.name.indexOf(".DS") < 0)
+          if (stat.name.indexOf(".DS") < 0 && stat.name.indexOf(".cpp")>0)
               files.push(root + '/' + stat.name);
           next();
 });
@@ -393,7 +438,7 @@ function sortByKey(array, key) {
                       });
 }
 
-//go through each .cpp file, compile, run, check for invalid result (f.e. if "BAD" will be printed or if it will crash / hang / etc) and report times
+//go through each .cpp file, compile, run, check for invalid result
 walker.on('end', function() {
   var runString = "run";
   if (NUM_RUNS > 1) runString = "runs";
@@ -406,7 +451,28 @@ walker.on('end', function() {
             var path = files[i];
             var fnum = path.substring(SOLUTIONS_FOLDER.length + 1, path.length);
             var id = parseFloat(fnum);
-            var src = fs.readFileSync(path).toString();
+
+          
+          var shouldTest = true;
+          if (STUDENT_IDS.length) {
+            shouldTest = false;
+            for (var s = 0; s < STUDENT_IDS.length; ++s) {
+                if (STUDENT_IDS[s] == id) {
+                    shouldTest = true;
+                    break;
+                }
+          
+            }
+          }
+          
+          if (!shouldTest) {
+          log ("Will not test for id " + id + ", since there is -ids param, and this id is not in it");
+          continue;
+          }
+
+          
+          
+          var src = fs.readFileSync(path).toString();
 
             src = src.split(" main(").join(" _3bb005aa__fmi_hpc_2015_main2_invalidated__(");
 
@@ -416,20 +482,35 @@ walker.on('end', function() {
 
             var res = homework(id, HOMEWORK_NUMBER, src);
 
-            results.push( {"result":resToString(res.result), "avgTime":res.txt, "facultyNumber":id} );
+          
+          var time = res.time;
+          if (time == -1)
+            time = 999999;
+          
+            results.push( {"result":resToString(res.result), "avgTime":time, "facultyNumber":id, "str":res.str} );
 
           } catch(e) {
             messages += ("Error executing: " + id + " " + e) + '\n';
         }
     }
-          
-    sortByKey(results, "avgTime");
-
-    for (var i = 0; i < results.length; ++i) {
-        var result = results[i];
-        messages += "Faculty number: " + result.facultyNumber + ", result:" + result.result + ", avg time:" + result.avgTime + "\n";
+     
+    if (SORT_BY == "time") {
+          sortByKey(results, "avgTime");
+    } else if (SORT_BY == "student") {
+          sortByKey(results, "facultyNumber");
     }
           
+    for (var i = 0; i < results.length; ++i) {
+        var result = results[i];
+        messages += "Faculty number: " + result.facultyNumber + ", avg time:" + result.avgTime + ", result:" + result.result;
+        
+        if (result.str)
+          messages += " Reason: " + result.str;
+          
+        messages += '\n';
+    }
+    messages += "Total " + results.length + " checked\n"
+
     log(messages);
 
 });
