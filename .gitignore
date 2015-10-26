@@ -42,8 +42,6 @@ cuda_hello_world/cuda_hello_world/kernels.ptx
 *.cubin
 cuda_hello_world/build/cuda_hello_world.build/Release/cuda_hello_world.build/dgph
 
-*.cpp
-
 *.bin
 
 internal/homeworks_main/
@@ -51,3 +49,7 @@ internal/homeworks_main/
 internal/node_modules/
 
 internal/homework_js_temp_folder/
+
+internal/data/
+
+internal/*.cpp
