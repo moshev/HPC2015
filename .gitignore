@@ -53,3 +53,9 @@ internal/homework_js_temp_folder/
 internal/data/
 
 internal/*.cpp
+
+internal/a.out
+
+cuda_hello_world/cuda_hello_world.xcodeproj/project.xcworkspace/xcshareddata/cuda_hello_world.xcscmblueprint
+
+opencl_hello_world/opencl_hello_world.xcodeproj/project.xcworkspace/xcshareddata/opencl_hello_world.xcscmblueprint

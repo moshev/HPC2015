@@ -67,6 +67,27 @@ What the host does:
 
 ---
 
+CUDA compilation
+![](./images/cuda_compiler_flow.png)
+
+---
+
+#[DEMO NVCC and NVRTC]
+
+* Loading CUDA program from CUBIN (nvcc)
+* Loading CUDA program from PTX (nvcc)
+* Loading CUDA program from CUDA SOURCE (nvrtc)
+
+"nv" = nVidia, cc = "cuda compiler", "rtc" = "runtime compiler"
+
+---
+
+OpenCL compilation
+![](./images/opencl_compiler_flow.png)
+
+---
+
+
 ## [DEMO OpenCL Hello World]
 
 ---
@@ -86,26 +107,6 @@ If you need such, use atomics or multiple calls from the host.
 ---
 
 ## [DEMO Crashing kernels]
-
----
-
-CUDA compilation
-![](./images/cuda_compiler_flow.png)
-
----
-
-#[DEMO NVCC and NVRTC]
-
-* Loading CUDA program from CUBIN (nvcc)
-* Loading CUDA program from PTX (nvcc)
-* Loading CUDA program from CUDA SOURCE (nvrtc)
-
-"nv" = nVidia, cc = "cuda compiler", "rtc" = "runtime compiler"
-
----
-
-OpenCL compilation
-![](./images/opencl_compiler_flow.png)
 
 ---
 
