@@ -118,7 +118,7 @@ var walk    = require('walk');
 
 //this will be used to invoke a compiler
 //if you don't have clang++, you wil have to modify that
-var COMPILER_START_COMMAND = 'clang++ -Xclang -std=c++14 -O3 -stdlib=libc++ -lpthread';
+var COMPILER_START_COMMAND = 'clang++ -Xclang -std=c++14 -O3 -stdlib=libc++ -I/Developer/git/GPAPI/GPAPI/HPC2015/ -fno-vectorize  -lstdc++ -lpthread -march=native';
 
 var USE_SANDBOXING = (os.platform()=="darwin") && parseFloat(os.release()) >= 15;
 
@@ -448,9 +448,9 @@ walker.on('end', function() {
     for (var i = 0; i < files.length; ++i) {
         try {
 
-            var path = files[i];
-            var fnum = path.substring(SOLUTIONS_FOLDER.length + 1, path.length);
-            var id = parseFloat(fnum);
+          var path = files[i];
+          var fnum = path.substring(SOLUTIONS_FOLDER.length + 1, path.length);
+          var id = parseFloat(fnum);
 
           
           var shouldTest = true;
@@ -466,22 +466,27 @@ walker.on('end', function() {
           }
           
           if (!shouldTest) {
-          log ("Will not test for id " + id + ", since there is -ids param, and this id is not in it");
-          continue;
+            log ("Will not test for id " + id + ", since there is -ids param, and this id is not in it");
+            continue;
           }
 
-          
-          
           var src = fs.readFileSync(path).toString();
 
-            src = src.split(" main(").join(" _3bb005aa__fmi_hpc_2015_main2_invalidated__(");
+          src = src.split(" main(").join(" _3bb005aa__fmi_hpc_2015_main2_invalidated__(");
 
-            src += baseSolution;
+          var hasSol = true;
+          //if (src.indexOf("foo(") < 0) {
+          //hasSol = false;
+          //src+="static void foo( \
+          //          float (& inout)[8]){}\n\n"
+          //}
+                   src += baseSolution;
 
-            log("\n\n **** Testing solution of student " + id + " ****")
-
-            var res = homework(id, HOMEWORK_NUMBER, src);
-
+          log("\n\n **** Testing solution of student " + id + " ****")
+          var res;
+          if (hasSol)
+           res = homework(id, HOMEWORK_NUMBER, src);
+          else res ={"result" : INCORRECT, "time":0/NUM_RUNS, "str": "No solution "}
           
           var time = res.time;
           if (time == -1)
