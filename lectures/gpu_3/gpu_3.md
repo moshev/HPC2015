@@ -1,4 +1,4 @@
-#GPGPU
+
 
 >"If at first you don't succeed, try, try again." The Rescuers (1977)
 
@@ -69,16 +69,6 @@ What the host does:
 
 CUDA compilation
 ![](./images/cuda_compiler_flow.png)
-
----
-
-#[DEMO NVCC and NVRTC]
-
-* Loading CUDA program from CUBIN (nvcc)
-* Loading CUDA program from PTX (nvcc)
-* Loading CUDA program from CUDA SOURCE (nvrtc)
-
-"nv" = nVidia, cc = "cuda compiler", "rtc" = "runtime compiler"
 
 ---
 
@@ -164,6 +154,12 @@ Most of the time spend optimizing is reducing the reads/write from/to memory
 
 ---
 
+Fermi (2), Kepler (3), Maxwell (5)
+
+CUDA SDK 4, 5, 6, 7
+
+---
+
 ## [DEMO Matrix multiply]
 
 ---
@@ -193,6 +189,16 @@ Most of the time spend optimizing is reducing the reads/write from/to memory
 ---
 
 This pattern (partitioning the tasks into blocks) is a common pattern, used not only in the GPGPU programming.
+
+---
+
+#[DEMO NVCC and NVRTC]
+
+* Loading CUDA program from CUBIN (nvcc)
+* Loading CUDA program from PTX (nvcc)
+* Loading CUDA program from CUDA SOURCE (nvrtc)
+
+"nv" = nVidia, cc = "cuda compiler", "rtc" = "runtime compiler"
 
 ---
 
@@ -290,6 +296,8 @@ nvcc:
 #define CONST(T) const T* restrict 
 CONST(int) x = ...
 ```
+
+* If we have time - loadAs(...)
 
 ---
 

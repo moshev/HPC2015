@@ -327,7 +327,7 @@ int main(int argc, const char * argv[]) {
     
     //*******************************************************
     //Hello World kernels (+ globalIdx, localIdx, blockIdx, etc)
-    
+#if 0
     for (int i = 0; i < COUNT_OF(kernels); ++i) {
         void *paramsPtrs[1] = {&devicePtr};
 
@@ -356,7 +356,9 @@ int main(int argc, const char * argv[]) {
         printLog(LogTypeInfoRaw,"\n\n\n\n");
 
     }
+#endif
 
+#if 0
     //*******************************************************
     //naive sum implementaion
     {
@@ -385,7 +387,9 @@ int main(int argc, const char * argv[]) {
         printLog(LogTypeInfoRaw,"sum0 result %i\n\n\n\n", sumResult);
 
     }
-
+#endif
+    
+#if 0
     //*******************************************************
     //better sum implementation
     {
@@ -413,7 +417,9 @@ int main(int argc, const char * argv[]) {
         printLog(LogTypeInfoRaw,"sum1 result %i\n\n\n\n", sumResult);
         
     }
-
+#endif
+    
+#if 0
     //*******************************************************
     //naive adj difference
     {
@@ -447,7 +453,9 @@ int main(int argc, const char * argv[]) {
         printLog(LogTypeInfoRaw,"\n\n\n\n");
         
     }
-
+#endif
+    
+#if 0
     //*******************************************************
     //better adj difference
     {
@@ -481,7 +489,9 @@ int main(int argc, const char * argv[]) {
         printLog(LogTypeInfoRaw,"\n\n\n\n");
         
     }
+#endif
     
+#if 0
     if (1)
     {
         const int STRIDE = 8;
@@ -537,8 +547,9 @@ int main(int argc, const char * argv[]) {
         }
         printLog(LogTypeInfoRaw,"\n\n\n\n");
     }
+#endif
     
-    
+#if 0
     if (1)
     {
         int matWidth = 64;
@@ -594,6 +605,9 @@ int main(int argc, const char * argv[]) {
         }
         printLog(LogTypeInfoRaw, "\n\n\n\n");
     }
+#endif 
+    
+#if 0
     //naive adj difference
     {
         std::unique_ptr<int[]> result(new int[SIZE]);
@@ -627,7 +641,9 @@ int main(int argc, const char * argv[]) {
         printLog(LogTypeInfoRaw,"\n\n\n\n");
         
     }
-        
+#endif
+    
+#if 0
     {
         std::unique_ptr<int[]> h_blocks(new int[globalSize]);
         memset(h_blocks.get(), 0, sizeof(int) * globalSize);
@@ -671,7 +687,7 @@ int main(int argc, const char * argv[]) {
         CHECK_ERROR(err);
         printLog(LogTypeInfo, "%i ", h_blocks[0]);
     }
-    
+#endif
     popContext(contexts[0]);
     
     return EXIT_SUCCESS;

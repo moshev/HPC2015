@@ -88,9 +88,7 @@ kernel void sum0(int* a, int* countPtr, int* result) {
     if (i > count) {
         return;
     }
-#if __CUDA_ARCH__ >= 200
     atomicAdd(result, a[i]);
-#endif //__CUDA_ARCH__
 }
 
 //************************************************
@@ -108,12 +106,10 @@ kernel void sum1(int* a, int* countPtr, int* result) {
         partialSum = 0;
     
     syncThreads();
-#if __CUDA_ARCH__ >= 200
     atomicAdd(&partialSum, a[i]);
 
     if (threadIdx.x == 0)
         atomicAdd(result, partialSum);
-#endif //__CUDA_ARCH__
 }
 
 //************************************************

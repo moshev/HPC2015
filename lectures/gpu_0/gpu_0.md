@@ -386,6 +386,22 @@ Difference between the CPU and the GPU thread models
 
 ---
 
+22.XII.2015 lecture starts here
+
+---
+
+notes: AMD Boltzmann initiative - CUDA running on AMD
+
+homeworks, projects, tests
+
+trading effectiveness for efficiency
+
+---
+
+recap ...
+
+---
+
 # Memory model
 
 ---
