@@ -548,6 +548,29 @@ More code in the next lecture.
 
 ---
 
+Exam:
+
+30.01.2016 - 101 - 09:00 - 11:00
+
+13.02.2016 - 101 - 09:00 - 11:00
+
+Projects:
+
+13.02.2016 - 101 - 11:00 - 14:00
+
+---
+
+Not a single well-done solution :(
+
+0. Pre-compute everything possible
+1. Update acceleration based on gravity
+2. Update acceleration based on fuel and engines and delta
+3. Update position and velocity based on acceleration and delta
+4. Detect crashes and kills
+5. Remove dead bodies
+
+---
+
 * You can use pointers, of course.
 * Prefer simple, regular acces patterns. 
 * Avoid pointer chasing.
