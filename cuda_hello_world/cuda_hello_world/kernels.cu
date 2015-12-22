@@ -142,9 +142,9 @@ kernel void adjDiff1(int* result, int* input) {
     //
     syncThreads();
     
-    if (tx > 0)
+    if (tx > 1)
         result[i] = sharedData[tx] - sharedData[tx - 1];
-    else if (i > 0) {
+    else if (i > 1) {
         result[i] = sharedData[tx] - input[i - 1];
     }
 }

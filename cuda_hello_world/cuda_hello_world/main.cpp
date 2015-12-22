@@ -223,7 +223,7 @@ void loadCUDAKernel(std::vector<CUdevice>& devices, std::vector<CUcontext>& cont
     std::unique_ptr<char[]> ptx(new char[ptxSize + 1]);
     nvRes = nvrtcGetPTX(program, ptx.get());
     
-    const char* TARGET_CUDA_SAVE_PTX_PATH = "/Users/savage309/Desktop/blago.txt";
+    const char* TARGET_CUDA_SAVE_PTX_PATH = "/Users/savage309/Desktop/blago.ptx";
     
     {
         std::fstream ptxStream(TARGET_CUDA_SAVE_PTX_PATH, std::ios_base::trunc | std::ios_base::out);
@@ -235,7 +235,7 @@ void loadCUDAKernel(std::vector<CUdevice>& devices, std::vector<CUcontext>& cont
         ptxStream << ptx.get();
     }
     
-    const size_t JIT_NUM_OPTIONS = 8;
+    const size_t JIT_NUM_OPTIONS = 9;
     const size_t JIT_BUFFER_SIZE_IN_BYTES = 1024;
     char logBuffer[JIT_BUFFER_SIZE_IN_BYTES];
     char errorBuffer[JIT_BUFFER_SIZE_IN_BYTES];
@@ -250,6 +250,7 @@ void loadCUDAKernel(std::vector<CUdevice>& devices, std::vector<CUcontext>& cont
     jitOptions[optionsCounter++] = CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES;
     jitOptions[optionsCounter++] = CU_JIT_ERROR_LOG_BUFFER;
     jitOptions[optionsCounter++] = CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES;
+    jitOptions[optionsCounter++] = CU_JIT_GENERATE_LINE_INFO;
     void* jitValues[JIT_NUM_OPTIONS];
     const int maxRegCount = 63;
     int valuesCounter = 0;
@@ -266,6 +267,8 @@ void loadCUDAKernel(std::vector<CUdevice>& devices, std::vector<CUcontext>& cont
     jitValues[valuesCounter++] = (void*)errorBuffer;
     const int errorBufferSize = JIT_BUFFER_SIZE_IN_BYTES;
     jitValues[valuesCounter++] = (void*)errorBufferSize;
+    const int generateLineInfo = 1;
+    jitValues[valuesCounter++] = (void*)generateLineInfo;
     for (int i = 0; i < devices.size(); ++i) {
         CUmodule program;
         CUresult err = cuModuleLoadDataEx(&program, ptx.get(), JIT_NUM_OPTIONS, jitOptions, jitValues);
