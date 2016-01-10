@@ -327,7 +327,7 @@ int main(int argc, const char * argv[]) {
     
     //*******************************************************
     //Hello World kernels (+ globalIdx, localIdx, blockIdx, etc)
-#if 0
+#if 1
     for (int i = 0; i < COUNT_OF(kernels); ++i) {
         void *paramsPtrs[1] = {&devicePtr};
 
@@ -358,7 +358,7 @@ int main(int argc, const char * argv[]) {
     }
 #endif
 
-#if 0
+#if 1
     //*******************************************************
     //naive sum implementaion
     {
@@ -389,7 +389,7 @@ int main(int argc, const char * argv[]) {
     }
 #endif
     
-#if 0
+#if 1
     //*******************************************************
     //better sum implementation
     {
@@ -419,7 +419,7 @@ int main(int argc, const char * argv[]) {
     }
 #endif
     
-#if 0
+#if 1
     //*******************************************************
     //naive adj difference
     {
@@ -455,7 +455,7 @@ int main(int argc, const char * argv[]) {
     }
 #endif
     
-#if 0
+#if 1
     //*******************************************************
     //better adj difference
     {
@@ -491,7 +491,7 @@ int main(int argc, const char * argv[]) {
     }
 #endif
     
-#if 0
+#if 1
     if (1)
     {
         const int STRIDE = 8;
@@ -549,7 +549,7 @@ int main(int argc, const char * argv[]) {
     }
 #endif
     
-#if 0
+#if 1
     if (1)
     {
         int matWidth = 64;
@@ -607,7 +607,7 @@ int main(int argc, const char * argv[]) {
     }
 #endif 
     
-#if 0
+#if 1
     //naive adj difference
     {
         std::unique_ptr<int[]> result(new int[SIZE]);
@@ -643,7 +643,7 @@ int main(int argc, const char * argv[]) {
     }
 #endif
     
-#if 0
+#if 1
     {
         std::unique_ptr<int[]> h_blocks(new int[globalSize]);
         memset(h_blocks.get(), 0, sizeof(int) * globalSize);

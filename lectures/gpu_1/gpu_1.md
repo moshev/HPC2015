@@ -110,9 +110,13 @@
 ---
 
 ## future
-* Pascal - 16nm
-* Stacked Memory (HBM)
-* Volta
+* Pascal - 16nm + FinFet
+* Stacked Memory (HBM2) (380/512/1024 GBs)
+ * Up to 32GB (cache or main)
+* Register cache
+* Smaller warp size
+* Single calc unit
+* Mid 2016
 
 ---
 
@@ -173,6 +177,17 @@ capacity *y
 
 ---
 
+## future
+* Polaris - 14nm/16nm + FinFet
+* Stacked Memory (HBM2) (380/512/1024 GBs)
+* Dynamic scheduler
+* Instruction pre-fetch
+* Memory compression
+* L2 cache
+* Mid 2016
+
+---
+
 #Intel HD Graphics
 
 ---
@@ -188,6 +203,7 @@ capacity *y
 * 2 x 4
 * 14nm/finfet
 * Bigget market share
+
 
 ---
 
@@ -236,21 +252,35 @@ capacity *y
 
 #### Final notes
 
-​* Make sure all caches are used (or not)
-​* Reduce data dependencies
-​* Have ILP
-​* Reduce register usage (use -v)
-​* no inline where possible
-​* hide that with inline, where possible
-​* code morph/trim
-​* multi kernel
-​* Thread divergence is A KILLER
-​* Compiler params are super important
-​* Function call is turbo expensive (recursion, virtual)
-​* Memory access patterns 
-​* Changing all the time
-​* "Ако първо не успееш, опитай втори път." The Rescuers, 1977
-​* Everything happens for a reason 
+* Have ILP
+
+* Make sure all caches are used (or not)
+
+* Reduce data dependencies
+​
+* Reduce register usage (use -v)
+​
+* no inline where possible
+​
+* hide that with inline, where possible
+​
+* code morph/trim
+​
+* multi kernel
+​
+* Thread divergence is A KILLER
+​
+* Compiler params are super important
+​
+* Function call is turbo expensive (recursion, virtual)
+​
+* Memory access patterns 
+​
+* Changing all the time
+​
+* "Ако първо не успееш, опитай втори път." The Rescuers, 1977
+​
+* Everything happens for a reason 
 
 ---
 
@@ -259,4 +289,22 @@ capacity *y
 * Maxwell    -  980  -   2048 cores - 4612 GF - 165W - 27.95
 * AMD          - 280x  -   1792 cores - 3290GF - 190W - 17.13
 * Intel          - 6200   -     384 cores -  768 GF < 47W - >16.43
-​* PoweVR   - Rogue ~     192 cores ~ 115 GF < 5W   - >25
+​* PowerVR   - Rogue ~     192 cores ~ 115 GF < 5W   - >25
+
+---
+
+![](./images/cpu_gpu_energy.PNG)
+
+---
+
+![](./images/ooo_energy.PNG)
+
+---
+
+![](./images/inorder_energy.PNG)
+
+Azizi PhD, Stanford 2010
+
+---
+
+![](./images/memory_energy.PNG)

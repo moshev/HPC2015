@@ -82,7 +82,7 @@ OpenCL compilation
 
 ---
 
-First lecture 2016 begins here
+First lecture 2016 begins here (5.I)
 
 ---
 
@@ -437,9 +437,29 @@ float sum(float* data, int n) {
 
 ---
 
+12.I.2016 lecture starts here
+
+---
+
+Recap
+
+CUDA runtime API, CUDA driver API
+
+Banked (shared) memory
+
+LDG intrinsic, blocked matrix multiply
+
+Reduction (we will check that again)
+
+---
+
 ## [DEMO SUM] (using atomic & using shared memory)
 
 Tree-approach
+
+Kepler & Fermi are using software-atomic-adds in shared memory
+
+Maxwell is using hardware-atomic-adds in shared memory
 
 ---
 
@@ -475,44 +495,8 @@ Variable number of elements per thread ?
 ---
 
 * Sort
- * Counting sort
+ * Counting sort - how do we do it ?
  * Odd-Even sort
-
-```
-while A is not sorted:
-    if is_odd(i) and A[i+1] < A[i]
-        swap(A[i+1], A[i]);
-    barrier;
-    if even(i) and A[i+1] < A[i]
-        swap(A[i+1], A[i]);
-    barrier
-```
-
----
-
-Ranking Sort
-
-```
-rank[i] = count(j < i where A[j] <= A[i]) +
-          count (j > i where A[j] < A[i])
-permute(A[i], A[rank[i]])
-```
-
----
-
-Can be transformed to radix sort
-```
-a[i]==0, then
-offset[i] = count(j < i where A[j] == 1)
-
-a[i]==1, then
-offiset[i] = count(j > i, where A[j] == 0)
-
-permute(A[i], A[i - offset[i]))
-```
-
-How many ones/zeros to my left -> prefix sum
-(for zeros invert the values)
 
 ---
 
@@ -528,6 +512,10 @@ Bonus slides in case we have time
 Dynamic parallelism
 
 ![](./images/dynamic_parallelism0.png)
+
+OpenCL 2.0 enabled devices
+
+CUDA 3.5 or newer
 
 ---
 
@@ -661,8 +649,6 @@ It is easier than it sounds.
 # [DEMO nSight profiling]
 
 ---
-
-Recap
 
 * nSight (-lineinfo)
 * Shared mem
